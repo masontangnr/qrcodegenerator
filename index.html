@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced QR Code Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Generator</h1>
+
+        <div class="main-layout">
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <!-- URL Input -->
+                <div class="control-group">
+                    <label for="url-input">Website URL:</label>
+                    <input type="text" id="url-input" placeholder="https://example.com" value="https://example.com">
+                </div>
+
+                <!-- QR Code Pattern Style -->
+                <div class="control-group">
+                    <label>QR Code Pattern Style:</label>
+                    <div class="pattern-grid">
+                        <div class="pattern-option" data-pattern="square" title="Square">
+                            <div class="pattern-preview square-pattern"></div>
+                            <span>Square</span>
+                        </div>
+                        <div class="pattern-option" data-pattern="rounded" title="Rounded">
+                            <div class="pattern-preview rounded-pattern"></div>
+                            <span>Rounded</span>
+                        </div>
+                        <div class="pattern-option active" data-pattern="dots" title="Dots">
+                            <div class="pattern-preview dots-pattern"></div>
+                            <span>Dots</span>
+                        </div>
+                        <div class="pattern-option" data-pattern="extra-rounded" title="Extra Rounded">
+                            <div class="pattern-preview extra-rounded-pattern"></div>
+                            <span>Extra Rounded</span>
+                        </div>
+                        <div class="pattern-option" data-pattern="classy" title="Classy">
+                            <div class="pattern-preview classy-pattern"></div>
+                            <span>Classy</span>
+                        </div>
+                        <div class="pattern-option" data-pattern="classy-rounded" title="Classy Rounded">
+                            <div class="pattern-preview classy-rounded-pattern"></div>
+                            <span>Classy Rounded</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pattern Colors -->
+                <div class="control-group">
+                    <label for="pattern-color">Pattern Color:</label>
+                    <input type="color" id="pattern-color" value="#000000">
+                </div>
+
+                <div class="control-group">
+                    <label for="bg-color">Background Color:</label>
+                    <input type="color" id="bg-color" value="#ffffff">
+                </div>
+
+                <!-- Corner Square Style -->
+                <div class="control-group">
+                    <label>Corner Square Style:</label>
+                    <div class="corner-grid">
+                        <div class="corner-option" data-corner="square" title="Square">
+                            <div class="corner-preview square-corner"></div>
+                            <span>Square</span>
+                        </div>
+                        <div class="corner-option active" data-corner="extra-rounded" title="Extra Rounded">
+                            <div class="corner-preview extra-rounded-corner"></div>
+                            <span>Extra Rounded</span>
+                        </div>
+                        <div class="corner-option" data-corner="rounded" title="Rounded">
+                            <div class="corner-preview rounded-corner"></div>
+                            <span>Rounded</span>
+                        </div>
+                        <div class="corner-option" data-corner="dot" title="Dot">
+                            <div class="corner-preview dot-corner"></div>
+                            <span>Dot</span>
+                        </div>
+                        <div class="corner-option" data-corner="classy" title="Classy">
+                            <div class="corner-preview classy-corner"></div>
+                            <span>Classy</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="corner-square-color">Corner Square Color:</label>
+                    <input type="color" id="corner-square-color" value="#000000">
+                </div>
+
+                <!-- Corner Dot Style -->
+                <div class="control-group">
+                    <label>Corner Dot Style:</label>
+                    <div class="corner-dot-grid">
+                        <div class="corner-dot-option active" data-dot="square" title="Square">
+                            <div class="corner-dot-preview square-dot"></div>
+                            <span>Square</span>
+                        </div>
+                        <div class="corner-dot-option" data-dot="dot" title="Dot">
+                            <div class="corner-dot-preview dot-dot"></div>
+                            <span>Dot</span>
+                        </div>
+                        <div class="corner-dot-option" data-dot="diamond" title="Diamond">
+                            <div class="corner-dot-preview diamond-dot"></div>
+                            <span>Diamond</span>
+                        </div>
+                        <div class="corner-dot-option" data-dot="rounded" title="Rounded">
+                            <div class="corner-dot-preview rounded-dot"></div>
+                            <span>Rounded</span>
+                        </div>
+                        <div class="corner-dot-option" data-dot="extra-rounded" title="Extra Rounded">
+                            <div class="corner-dot-preview extra-rounded-dot"></div>
+                            <span>Extra Rounded</span>
+                        </div>
+                        <div class="corner-dot-option" data-dot="classy" title="Classy">
+                            <div class="corner-dot-preview classy-dot"></div>
+                            <span>Classy</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="corner-dot-color">Corner Dot Color:</label>
+                    <input type="color" id="corner-dot-color" value="#000000">
+                </div>
+
+                <!-- Logo Upload -->
+                <div class="control-group">
+                    <label for="logo-upload">Upload Logo:</label>
+                    <input type="file" id="logo-upload" accept="image/*">
+                    <button id="remove-logo" style="display: none;">Remove Logo</button>
+                </div>
+
+                <div class="control-group">
+                    <label for="logo-size">Logo Size:</label>
+                    <input type="range" id="logo-size" min="10" max="40" value="20">
+                    <span id="logo-size-value">20%</span>
+                </div>
+
+                <!-- Export Options -->
+                <div class="control-group export-buttons">
+                    <label>Export QR Code:</label>
+                    <div class="button-group">
+                        <button id="export-png" class="export-btn">PNG</button>
+                        <button id="export-jpg" class="export-btn">JPG</button>
+                        <button id="export-svg" class="export-btn">SVG</button>
+                        <button id="export-pdf" class="export-btn">PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Preview -->
+            <div class="preview-panel">
+                <h2>Preview</h2>
+                <div class="qr-container">
+                    <canvas id="qr-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="qrcode.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,557 @@
+/**
+ * Advanced QR Code Generator Application
+ * Features: Custom patterns, corner styles, logo support, and multiple export formats
+ */
+
+class QRCodeGenerator {
+    constructor() {
+        this.canvas = document.getElementById('qr-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.qrData = null;
+        this.logoImage = null;
+
+        // Configuration
+        this.config = {
+            url: 'https://example.com',
+            patternStyle: 'dots',
+            patternColor: '#000000',
+            backgroundColor: '#ffffff',
+            cornerSquareStyle: 'extra-rounded',
+            cornerSquareColor: '#000000',
+            cornerDotStyle: 'square',
+            cornerDotColor: '#000000',
+            logoSize: 20,
+            canvasSize: 500,
+            margin: 20
+        };
+
+        this.initializeEventListeners();
+        this.generateQRCode();
+    }
+
+    initializeEventListeners() {
+        // URL input
+        const urlInput = document.getElementById('url-input');
+        urlInput.addEventListener('input', (e) => {
+            this.config.url = e.target.value || 'https://example.com';
+            this.generateQRCode();
+        });
+
+        // Pattern style selection
+        document.querySelectorAll('.pattern-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                document.querySelectorAll('.pattern-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                this.config.patternStyle = option.dataset.pattern;
+                this.generateQRCode();
+            });
+        });
+
+        // Corner square style selection
+        document.querySelectorAll('.corner-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                document.querySelectorAll('.corner-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                this.config.cornerSquareStyle = option.dataset.corner;
+                this.generateQRCode();
+            });
+        });
+
+        // Corner dot style selection
+        document.querySelectorAll('.corner-dot-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                document.querySelectorAll('.corner-dot-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                this.config.cornerDotStyle = option.dataset.dot;
+                this.generateQRCode();
+            });
+        });
+
+        // Color pickers
+        document.getElementById('pattern-color').addEventListener('input', (e) => {
+            this.config.patternColor = e.target.value;
+            this.generateQRCode();
+        });
+
+        document.getElementById('bg-color').addEventListener('input', (e) => {
+            this.config.backgroundColor = e.target.value;
+            this.generateQRCode();
+        });
+
+        document.getElementById('corner-square-color').addEventListener('input', (e) => {
+            this.config.cornerSquareColor = e.target.value;
+            this.generateQRCode();
+        });
+
+        document.getElementById('corner-dot-color').addEventListener('input', (e) => {
+            this.config.cornerDotColor = e.target.value;
+            this.generateQRCode();
+        });
+
+        // Logo upload
+        document.getElementById('logo-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.logoImage = img;
+                        document.getElementById('remove-logo').style.display = 'inline-block';
+                        this.generateQRCode();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove logo
+        document.getElementById('remove-logo').addEventListener('click', () => {
+            this.logoImage = null;
+            document.getElementById('logo-upload').value = '';
+            document.getElementById('remove-logo').style.display = 'none';
+            this.generateQRCode();
+        });
+
+        // Logo size slider
+        document.getElementById('logo-size').addEventListener('input', (e) => {
+            this.config.logoSize = parseInt(e.target.value);
+            document.getElementById('logo-size-value').textContent = e.target.value + '%';
+            this.generateQRCode();
+        });
+
+        // Export buttons
+        document.getElementById('export-png').addEventListener('click', () => this.exportAs('png'));
+        document.getElementById('export-jpg').addEventListener('click', () => this.exportAs('jpg'));
+        document.getElementById('export-svg').addEventListener('click', () => this.exportAs('svg'));
+        document.getElementById('export-pdf').addEventListener('click', () => this.exportAs('pdf'));
+    }
+
+    generateQRCode() {
+        try {
+            // Create QR code data
+            const qr = new QRCode(10, ErrorCorrectionLevel.H);
+            qr.addData(this.config.url);
+            qr.make();
+
+            this.qrData = qr;
+            this.drawQRCode();
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+        }
+    }
+
+    drawQRCode() {
+        const moduleCount = this.qrData.getModuleCount();
+        const cellSize = (this.config.canvasSize - 2 * this.config.margin) / moduleCount;
+
+        // Set canvas size
+        this.canvas.width = this.config.canvasSize;
+        this.canvas.height = this.config.canvasSize;
+
+        // Clear canvas
+        this.ctx.fillStyle = this.config.backgroundColor;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw QR code modules
+        for (let row = 0; row < moduleCount; row++) {
+            for (let col = 0; col < moduleCount; col++) {
+                if (this.qrData.isDark(row, col)) {
+                    const x = col * cellSize + this.config.margin;
+                    const y = row * cellSize + this.config.margin;
+
+                    // Check if this is a corner position element
+                    const isCornerSquare = this.isCornerSquarePosition(row, col, moduleCount);
+                    const isCornerDot = this.isCornerDotPosition(row, col, moduleCount);
+
+                    if (isCornerSquare) {
+                        this.ctx.fillStyle = this.config.cornerSquareColor;
+                        this.drawCornerSquare(x, y, cellSize, row, col, moduleCount);
+                    } else if (isCornerDot) {
+                        this.ctx.fillStyle = this.config.cornerDotColor;
+                        this.drawCornerDot(x, y, cellSize);
+                    } else {
+                        this.ctx.fillStyle = this.config.patternColor;
+                        this.drawModule(x, y, cellSize, row, col);
+                    }
+                }
+            }
+        }
+
+        // Draw logo if present
+        if (this.logoImage) {
+            this.drawLogo();
+        }
+    }
+
+    isCornerSquarePosition(row, col, moduleCount) {
+        // Top-left corner (excluding center dot)
+        if (row >= 0 && row <= 6 && col >= 0 && col <= 6) {
+            if (row >= 2 && row <= 4 && col >= 2 && col <= 4) {
+                return false; // This is the center dot
+            }
+            return true;
+        }
+        // Top-right corner (excluding center dot)
+        if (row >= 0 && row <= 6 && col >= moduleCount - 7 && col <= moduleCount - 1) {
+            if (row >= 2 && row <= 4 && col >= moduleCount - 5 && col <= moduleCount - 3) {
+                return false; // This is the center dot
+            }
+            return true;
+        }
+        // Bottom-left corner (excluding center dot)
+        if (row >= moduleCount - 7 && row <= moduleCount - 1 && col >= 0 && col <= 6) {
+            if (row >= moduleCount - 5 && row <= moduleCount - 3 && col >= 2 && col <= 4) {
+                return false; // This is the center dot
+            }
+            return true;
+        }
+        return false;
+    }
+
+    isCornerDotPosition(row, col, moduleCount) {
+        // Top-left corner dot
+        if (row >= 2 && row <= 4 && col >= 2 && col <= 4) {
+            return true;
+        }
+        // Top-right corner dot
+        if (row >= 2 && row <= 4 && col >= moduleCount - 5 && col <= moduleCount - 3) {
+            return true;
+        }
+        // Bottom-left corner dot
+        if (row >= moduleCount - 5 && row <= moduleCount - 3 && col >= 2 && col <= 4) {
+            return true;
+        }
+        return false;
+    }
+
+    drawModule(x, y, size, row, col) {
+        this.ctx.save();
+
+        switch (this.config.patternStyle) {
+            case 'square':
+                this.ctx.fillRect(x, y, size, size);
+                break;
+
+            case 'rounded':
+                this.drawRoundedRect(x, y, size, size, size * 0.25);
+                break;
+
+            case 'dots':
+                this.ctx.beginPath();
+                this.ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                break;
+
+            case 'extra-rounded':
+                this.drawRoundedRect(x, y, size, size, size * 0.4);
+                break;
+
+            case 'classy':
+                // Octagonal shape
+                this.drawOctagon(x, y, size);
+                break;
+
+            case 'classy-rounded':
+                // Rounded rectangle with more rounding
+                this.drawRoundedRect(x, y, size, size, size * 0.35);
+                break;
+
+            default:
+                this.ctx.fillRect(x, y, size, size);
+        }
+
+        this.ctx.restore();
+    }
+
+    drawCornerSquare(x, y, size, row, col, moduleCount) {
+        // Determine which corner and position within corner
+        let cornerX, cornerY, cornerRow, cornerCol;
+
+        if (row <= 6 && col <= 6) {
+            // Top-left
+            cornerX = this.config.margin;
+            cornerY = this.config.margin;
+            cornerRow = row;
+            cornerCol = col;
+        } else if (row <= 6 && col >= moduleCount - 7) {
+            // Top-right
+            cornerX = (moduleCount - 7) * size + this.config.margin;
+            cornerY = this.config.margin;
+            cornerRow = row;
+            cornerCol = col - (moduleCount - 7);
+        } else {
+            // Bottom-left
+            cornerX = this.config.margin;
+            cornerY = (moduleCount - 7) * size + this.config.margin;
+            cornerRow = row - (moduleCount - 7);
+            cornerCol = col;
+        }
+
+        this.ctx.save();
+
+        const cellSize = (this.config.canvasSize - 2 * this.config.margin) / moduleCount;
+
+        switch (this.config.cornerSquareStyle) {
+            case 'square':
+                this.ctx.fillRect(x, y, cellSize, cellSize);
+                break;
+
+            case 'rounded':
+                this.drawRoundedRect(x, y, cellSize, cellSize, cellSize * 0.25);
+                break;
+
+            case 'extra-rounded':
+                this.drawRoundedRect(x, y, cellSize, cellSize, cellSize * 0.4);
+                break;
+
+            case 'dot':
+                this.ctx.beginPath();
+                this.ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize / 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                break;
+
+            case 'classy':
+                this.drawOctagon(x, y, cellSize);
+                break;
+
+            default:
+                this.ctx.fillRect(x, y, cellSize, cellSize);
+        }
+
+        this.ctx.restore();
+    }
+
+    drawCornerDot(x, y, size) {
+        this.ctx.save();
+
+        switch (this.config.cornerDotStyle) {
+            case 'square':
+                this.ctx.fillRect(x, y, size, size);
+                break;
+
+            case 'dot':
+                this.ctx.beginPath();
+                this.ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                break;
+
+            case 'diamond':
+                // Draw diamond (rotated square)
+                this.ctx.save();
+                this.ctx.translate(x + size / 2, y + size / 2);
+                this.ctx.rotate(Math.PI / 4);
+                this.ctx.fillRect(-size / 2, -size / 2, size, size);
+                this.ctx.restore();
+                break;
+
+            case 'rounded':
+                this.drawRoundedRect(x, y, size, size, size * 0.25);
+                break;
+
+            case 'extra-rounded':
+                this.drawRoundedRect(x, y, size, size, size * 0.4);
+                break;
+
+            case 'classy':
+                this.drawOctagon(x, y, size);
+                break;
+
+            default:
+                this.ctx.fillRect(x, y, size, size);
+        }
+
+        this.ctx.restore();
+    }
+
+    drawRoundedRect(x, y, width, height, radius) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + radius, y);
+        this.ctx.lineTo(x + width - radius, y);
+        this.ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.ctx.lineTo(x + width, y + height - radius);
+        this.ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.ctx.lineTo(x + radius, y + height);
+        this.ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.ctx.lineTo(x, y + radius);
+        this.ctx.quadraticCurveTo(x, y, x + radius, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+    }
+
+    drawOctagon(x, y, size) {
+        const inset = size * 0.3;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + inset, y);
+        this.ctx.lineTo(x + size - inset, y);
+        this.ctx.lineTo(x + size, y + inset);
+        this.ctx.lineTo(x + size, y + size - inset);
+        this.ctx.lineTo(x + size - inset, y + size);
+        this.ctx.lineTo(x + inset, y + size);
+        this.ctx.lineTo(x, y + size - inset);
+        this.ctx.lineTo(x, y + inset);
+        this.ctx.closePath();
+        this.ctx.fill();
+    }
+
+    drawLogo() {
+        const logoSizePercent = this.config.logoSize / 100;
+        const logoSize = this.config.canvasSize * logoSizePercent;
+        const logoX = (this.config.canvasSize - logoSize) / 2;
+        const logoY = (this.config.canvasSize - logoSize) / 2;
+
+        // Draw white background for logo
+        this.ctx.fillStyle = this.config.backgroundColor;
+        this.ctx.fillRect(logoX - 10, logoY - 10, logoSize + 20, logoSize + 20);
+
+        // Draw logo
+        this.ctx.drawImage(this.logoImage, logoX, logoY, logoSize, logoSize);
+    }
+
+    exportAs(format) {
+        switch (format) {
+            case 'png':
+                this.exportPNG();
+                break;
+            case 'jpg':
+                this.exportJPG();
+                break;
+            case 'svg':
+                this.exportSVG();
+                break;
+            case 'pdf':
+                this.exportPDF();
+                break;
+        }
+    }
+
+    exportPNG() {
+        const link = document.createElement('a');
+        link.download = 'qrcode.png';
+        link.href = this.canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    exportJPG() {
+        const link = document.createElement('a');
+        link.download = 'qrcode.jpg';
+        link.href = this.canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+    }
+
+    exportSVG() {
+        const moduleCount = this.qrData.getModuleCount();
+        const cellSize = (this.config.canvasSize - 2 * this.config.margin) / moduleCount;
+
+        let svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${this.config.canvasSize}" height="${this.config.canvasSize}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${this.config.canvasSize}" height="${this.config.canvasSize}" fill="${this.config.backgroundColor}"/>
+    <g>`;
+
+        // Draw QR modules as SVG
+        for (let row = 0; row < moduleCount; row++) {
+            for (let col = 0; col < moduleCount; col++) {
+                if (this.qrData.isDark(row, col)) {
+                    const x = col * cellSize + this.config.margin;
+                    const y = row * cellSize + this.config.margin;
+
+                    const isCornerSquare = this.isCornerSquarePosition(row, col, moduleCount);
+                    const isCornerDot = this.isCornerDotPosition(row, col, moduleCount);
+
+                    let color = this.config.patternColor;
+                    if (isCornerSquare) {
+                        color = this.config.cornerSquareColor;
+                    } else if (isCornerDot) {
+                        color = this.config.cornerDotColor;
+                    }
+
+                    // Simple square for SVG export
+                    if (this.config.patternStyle === 'dots' ||
+                        (isCornerDot && this.config.cornerDotStyle === 'dot') ||
+                        (isCornerSquare && this.config.cornerSquareStyle === 'dot')) {
+                        svg += `\n        <circle cx="${x + cellSize/2}" cy="${y + cellSize/2}" r="${cellSize/2}" fill="${color}"/>`;
+                    } else {
+                        const radius = cellSize * 0.2;
+                        svg += `\n        <rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="${radius}" fill="${color}"/>`;
+                    }
+                }
+            }
+        }
+
+        // Add logo if present
+        if (this.logoImage) {
+            const logoSizePercent = this.config.logoSize / 100;
+            const logoSize = this.config.canvasSize * logoSizePercent;
+            const logoX = (this.config.canvasSize - logoSize) / 2;
+            const logoY = (this.config.canvasSize - logoSize) / 2;
+
+            // Background for logo
+            svg += `\n        <rect x="${logoX - 10}" y="${logoY - 10}" width="${logoSize + 20}" height="${logoSize + 20}" fill="${this.config.backgroundColor}"/>`;
+        }
+
+        svg += '\n    </g>\n</svg>';
+
+        // Download SVG
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = 'qrcode.svg';
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    exportPDF() {
+        // Create a simple PDF using canvas
+        // For a real implementation, you'd use a library like jsPDF
+        // This creates a basic PDF with the QR code as an image
+
+        const imgData = this.canvas.toDataURL('image/png');
+
+        // Simple PDF generation
+        const pdfContent = `%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${this.config.canvasSize} ${this.config.canvasSize}] /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 0 >>
+stream
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000229 00000 n
+trailer
+<< /Size 5 /Root 1 0 R >>
+startxref
+278
+%%EOF`;
+
+        // For now, we'll export as PNG with PDF extension
+        // In production, use jsPDF library for proper PDF generation
+        const link = document.createElement('a');
+        link.download = 'qrcode.pdf';
+
+        // Note: This is a simplified PDF export. For production use, integrate jsPDF
+        alert('PDF export: For best results, please use the PNG export and convert to PDF using external tools, or we can integrate jsPDF library for proper PDF support.');
+
+        // Fall back to PNG export
+        this.exportPNG();
+    }
+}
+
+// Initialize the QR Code Generator when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new QRCodeGenerator();
+});
