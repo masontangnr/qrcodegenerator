@@ -170,7 +170,7 @@ class QRCodeGenerator {
                         this.drawCornerSquare(x, y, cellSize, row, col, moduleCount);
                     } else if (isCornerDot) {
                         this.ctx.fillStyle = this.config.cornerDotColor;
-                        this.drawCornerDot(x, y, cellSize);
+                        this.drawCornerDot(x, y, cellSize, row, col, moduleCount);
                     } else {
                         this.ctx.fillStyle = this.config.patternColor;
                         this.drawModule(x, y, cellSize, row, col);
@@ -333,7 +333,7 @@ class QRCodeGenerator {
         this.ctx.restore();
     }
 
-    drawCornerDot(x, y, size) {
+    drawCornerDot(x, y, size, row, col, moduleCount) {
         this.ctx.save();
 
         switch (this.config.cornerDotStyle) {
@@ -348,12 +348,23 @@ class QRCodeGenerator {
                 break;
 
             case 'diamond':
-                // Draw diamond (rotated square)
-                this.ctx.save();
-                this.ctx.translate(x + size / 2, y + size / 2);
-                this.ctx.rotate(Math.PI / 4);
-                this.ctx.fillRect(-size / 2, -size / 2, size, size);
-                this.ctx.restore();
+                // Draw single large diamond for entire 3x3 corner dot area
+                // Only draw once when at the top-left position of the corner dot
+                const isTopLeftCornerDot = (row === 2 && col === 2);
+                const isTopRightCornerDot = (row === 2 && col === moduleCount - 5);
+                const isBottomLeftCornerDot = (row === moduleCount - 5 && col === 2);
+
+                if (isTopLeftCornerDot || isTopRightCornerDot || isBottomLeftCornerDot) {
+                    // Draw large diamond with spacing in 3x3 area
+                    const fullAreaSize = size * 3;
+                    const largeSize = size * 2.2;
+                    this.ctx.save();
+                    this.ctx.translate(x + fullAreaSize / 2, y + fullAreaSize / 2);
+                    this.ctx.rotate(Math.PI / 4);
+                    this.ctx.fillRect(-largeSize / 2, -largeSize / 2, largeSize, largeSize);
+                    this.ctx.restore();
+                }
+                // For other positions in the 3x3 area, don't draw anything (return early handled by if block)
                 break;
 
             case 'rounded':
