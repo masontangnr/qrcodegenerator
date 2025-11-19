@@ -181,6 +181,10 @@ h2 {
     position: relative;
 }
 
+.diamond-pattern {
+    transform: rotate(45deg);
+}
+
 /* Corner Previews */
 .square-corner {
     border: 3px solid #333;

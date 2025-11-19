@@ -21,7 +21,7 @@ class QRCodeGenerator {
             cornerDotStyle: 'square',
             cornerDotColor: '#000000',
             logoSize: 20,
-            canvasSize:400,
+            canvasSize:300,
             margin: 0
         };
 
@@ -256,6 +256,16 @@ class QRCodeGenerator {
             case 'classy-rounded':
                 // Rounded rectangle with more rounding
                 this.drawRoundedRect(x, y, size, size, size * 0.35);
+                break;
+
+            case 'diamond':
+                // Draw diamond (rotated square) with spacing
+                const diamondSize = size * 0.7;
+                this.ctx.save();
+                this.ctx.translate(x + size / 2, y + size / 2);
+                this.ctx.rotate(Math.PI / 4);
+                this.ctx.fillRect(-diamondSize / 2, -diamondSize / 2, diamondSize, diamondSize);
+                this.ctx.restore();
                 break;
 
             default:
