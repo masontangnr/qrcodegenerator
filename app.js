@@ -10,7 +10,7 @@ class QRCodeGenerator {
         this.qrData = null;
         this.logoImage = null;
 
-        // Configuration
+        // Default Settings
         this.config = {
             url: 'https://example.com',
             patternStyle: 'dots',
@@ -21,8 +21,8 @@ class QRCodeGenerator {
             cornerDotStyle: 'square',
             cornerDotColor: '#000000',
             logoSize: 20,
-            canvasSize: 500,
-            margin: 20
+            canvasSize:400,
+            margin: 0
         };
 
         this.initializeEventListeners();
