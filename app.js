@@ -260,7 +260,7 @@ class QRCodeGenerator {
 
             case 'diamond':
                 // Draw diamond (rotated square) with spacing
-                const diamondSize = size * 0.7;
+                const diamondSize = size * 0.55;
                 this.ctx.save();
                 this.ctx.translate(x + size / 2, y + size / 2);
                 this.ctx.rotate(Math.PI / 4);
