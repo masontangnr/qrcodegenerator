@@ -34,17 +34,19 @@ This is a client-side web application that generates highly customizable QR code
 
 ### Styling System
 
-The application supports 17 different style combinations:
-- 6 pattern styles for data modules (square, rounded, dots, extra-rounded, classy, classy-rounded)
-- 5 corner square styles
-- 6 corner dot styles
+The application supports extensive style combinations:
+- 7 pattern styles for data modules (square, rounded, dots, extra-rounded, classy, classy-rounded, diamond)
+- 5 corner square styles (square, rounded, extra-rounded, dot, classy)
+- 6 corner dot styles (square, dot, diamond, rounded, extra-rounded, classy)
 - Individual color control for each region type
 
 Style rendering is handled by dedicated methods:
-- `drawModule()`: Renders data modules with pattern styles
-- `drawCornerSquare()`: Renders outer corner positioning patterns
-- `drawCornerDot()`: Renders inner corner dots
+- `drawModule()`: Renders data modules with pattern styles (includes diamond pattern support)
+- `drawCornerSquare()`: Renders outer corner positioning patterns as solid frames (draws once at corner origin)
+- `drawCornerDot()`: Renders inner corner dots as solid frames (draws once at center dot origin)
 - Helper methods: `drawRoundedRect()`, `drawOctagon()`
+
+**Important rendering optimization**: Corner squares and corner dots are now rendered as complete 7x7 and 3x3 solid frames respectively, drawn only once at the origin position of each corner region, rather than individual modules. This provides cleaner, more consistent styling.
 
 ## Development
 
@@ -64,7 +66,7 @@ npx serve
 
 - `index.html`: HTML structure with controls panel and canvas preview
 - `style.css`: All styling including responsive design
-- `app.js`: Complete application logic (~558 lines)
+- `app.js`: Complete application logic (~805 lines)
 - `qrcode.min.js`: Third-party QR code data generation library
 - `README.md`: User-facing documentation
 
@@ -82,7 +84,7 @@ The `config` object in the `QRCodeGenerator` class stores all current settings:
     cornerDotStyle: string,         // Corner dot style
     cornerDotColor: string,         // Hex color
     logoSize: number,               // Percentage (10-40)
-    canvasSize: number,             // Fixed at 400px
+    canvasSize: number,             // Fixed at 300px
     margin: number                  // Fixed at 0
 }
 ```
