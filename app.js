@@ -305,7 +305,41 @@ class QRCodeGenerator {
 
         switch (this.config.cornerSquareStyle) {
             case 'square':
-                this.ctx.fillRect(x, y, cellSize, cellSize);
+                // Draw single solid frame for entire corner square
+                // Only draw once at the top-left position of each corner
+                const isTopLeftOfCorner = (row === 0 && col === 0) ||
+                                         (row === 0 && col === moduleCount - 7) ||
+                                         (row === moduleCount - 7 && col === 0);
+
+                if (isTopLeftOfCorner) {
+                    const frameSize = cellSize * 7;
+                    const centerOffset = cellSize * 1;
+                    const centerSize = cellSize * 5;
+
+                    // Determine the starting position for this corner's frame
+                    let frameX, frameY;
+                    if (row === 0 && col === 0) {
+                        // Top-left corner
+                        frameX = this.config.margin;
+                        frameY = this.config.margin;
+                    } else if (row === 0 && col === moduleCount - 7) {
+                        // Top-right corner
+                        frameX = col * cellSize + this.config.margin;
+                        frameY = this.config.margin;
+                    } else {
+                        // Bottom-left corner
+                        frameX = this.config.margin;
+                        frameY = row * cellSize + this.config.margin;
+                    }
+
+                    // Draw outer 7x7 square
+                    this.ctx.fillRect(frameX, frameY, frameSize, frameSize);
+
+                    // Fill center with background color
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.ctx.fillRect(frameX + centerOffset, frameY + centerOffset, centerSize, centerSize);
+                }
+                // Skip drawing for all other positions in the corner square
                 break;
 
             case 'rounded':
