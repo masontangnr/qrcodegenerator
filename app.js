@@ -612,13 +612,50 @@ class QRCodeGenerator {
 
     switch (this.config.cornerDotStyle) {
       case "square":
-        this.ctx.fillRect(x, y, size, size);
+        // Draw single solid square for entire 3x3 corner dot area
+        // Only draw once at the top-left position of the corner dot
+        const isTopLeftCornerDotSquare = row === 2 && col === 2;
+        const isTopRightCornerDotSquare = row === 2 && col === moduleCount - 5;
+        const isBottomLeftCornerDotSquare = row === moduleCount - 5 && col === 2;
+
+        if (
+          isTopLeftCornerDotSquare ||
+          isTopRightCornerDotSquare ||
+          isBottomLeftCornerDotSquare
+        ) {
+          // Draw solid 3x3 square
+          const fullAreaSize = size * 3;
+          this.ctx.fillRect(x, y, fullAreaSize, fullAreaSize);
+        }
+        // Skip drawing for other positions in the 3x3 area
         break;
 
       case "dot":
-        this.ctx.beginPath();
-        this.ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
-        this.ctx.fill();
+        // Draw single solid circle for entire 3x3 corner dot area
+        // Only draw once at the top-left position of the corner dot
+        const isTopLeftCornerDotCircle = row === 2 && col === 2;
+        const isTopRightCornerDotCircle = row === 2 && col === moduleCount - 5;
+        const isBottomLeftCornerDotCircle = row === moduleCount - 5 && col === 2;
+
+        if (
+          isTopLeftCornerDotCircle ||
+          isTopRightCornerDotCircle ||
+          isBottomLeftCornerDotCircle
+        ) {
+          // Draw large circle covering 3x3 area
+          const fullAreaSize = size * 3;
+          const radius = fullAreaSize / 2;
+          this.ctx.beginPath();
+          this.ctx.arc(
+            x + fullAreaSize / 2,
+            y + fullAreaSize / 2,
+            radius,
+            0,
+            Math.PI * 2
+          );
+          this.ctx.fill();
+        }
+        // Skip drawing for other positions in the 3x3 area
         break;
 
       case "diamond":
@@ -651,15 +688,72 @@ class QRCodeGenerator {
         break;
 
       case "rounded":
-        this.drawRoundedRect(x, y, size, size, size * 0.25);
+        // Draw single solid rounded rectangle for entire 3x3 corner dot area
+        // Only draw once at the top-left position of the corner dot
+        const isTopLeftCornerDotRounded = row === 2 && col === 2;
+        const isTopRightCornerDotRounded = row === 2 && col === moduleCount - 5;
+        const isBottomLeftCornerDotRounded = row === moduleCount - 5 && col === 2;
+
+        if (
+          isTopLeftCornerDotRounded ||
+          isTopRightCornerDotRounded ||
+          isBottomLeftCornerDotRounded
+        ) {
+          // Draw solid 3x3 rounded rectangle
+          const fullAreaSize = size * 3;
+          this.drawRoundedRect(
+            x,
+            y,
+            fullAreaSize,
+            fullAreaSize,
+            size * 0.25
+          );
+        }
+        // Skip drawing for other positions in the 3x3 area
         break;
 
       case "extra-rounded":
-        this.drawRoundedRect(x, y, size, size, size * 0.4);
+        // Draw single solid extra-rounded rectangle for entire 3x3 corner dot area
+        // Only draw once at the top-left position of the corner dot
+        const isTopLeftCornerDotExtraRounded = row === 2 && col === 2;
+        const isTopRightCornerDotExtraRounded = row === 2 && col === moduleCount - 5;
+        const isBottomLeftCornerDotExtraRounded = row === moduleCount - 5 && col === 2;
+
+        if (
+          isTopLeftCornerDotExtraRounded ||
+          isTopRightCornerDotExtraRounded ||
+          isBottomLeftCornerDotExtraRounded
+        ) {
+          // Draw solid 3x3 extra-rounded rectangle
+          const fullAreaSize = size * 3;
+          this.drawRoundedRect(
+            x,
+            y,
+            fullAreaSize,
+            fullAreaSize,
+            size * 0.4
+          );
+        }
+        // Skip drawing for other positions in the 3x3 area
         break;
 
       case "classy":
-        this.drawOctagon(x, y, size);
+        // Draw single solid octagon for entire 3x3 corner dot area
+        // Only draw once at the top-left position of the corner dot
+        const isTopLeftCornerDotClassy = row === 2 && col === 2;
+        const isTopRightCornerDotClassy = row === 2 && col === moduleCount - 5;
+        const isBottomLeftCornerDotClassy = row === moduleCount - 5 && col === 2;
+
+        if (
+          isTopLeftCornerDotClassy ||
+          isTopRightCornerDotClassy ||
+          isBottomLeftCornerDotClassy
+        ) {
+          // Draw solid 3x3 octagon
+          const fullAreaSize = size * 3;
+          this.drawOctagon(x, y, fullAreaSize);
+        }
+        // Skip drawing for other positions in the 3x3 area
         break;
 
       default:
