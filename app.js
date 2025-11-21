@@ -343,21 +343,135 @@ class QRCodeGenerator {
                 break;
 
             case 'rounded':
-                this.drawRoundedRect(x, y, cellSize, cellSize, cellSize * 0.25);
+                // Draw single solid rounded frame for entire corner square
+                const isTopLeftOfCornerRounded = (row === 0 && col === 0) ||
+                                                 (row === 0 && col === moduleCount - 7) ||
+                                                 (row === moduleCount - 7 && col === 0);
+
+                if (isTopLeftOfCornerRounded) {
+                    const frameSize = cellSize * 7;
+                    const centerOffset = cellSize * 1;
+                    const centerSize = cellSize * 5;
+
+                    let frameX, frameY;
+                    if (row === 0 && col === 0) {
+                        frameX = this.config.margin;
+                        frameY = this.config.margin;
+                    } else if (row === 0 && col === moduleCount - 7) {
+                        frameX = col * cellSize + this.config.margin;
+                        frameY = this.config.margin;
+                    } else {
+                        frameX = this.config.margin;
+                        frameY = row * cellSize + this.config.margin;
+                    }
+
+                    // Draw outer 7x7 rounded rectangle
+                    this.drawRoundedRect(frameX, frameY, frameSize, frameSize, frameSize * 0.25);
+
+                    // Fill center with background color
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.drawRoundedRect(frameX + centerOffset, frameY + centerOffset, centerSize, centerSize, centerSize * 0.25);
+                }
                 break;
 
             case 'extra-rounded':
-                this.drawRoundedRect(x, y, cellSize, cellSize, cellSize * 0.4);
+                // Draw single solid extra-rounded frame for entire corner square
+                const isTopLeftOfCornerExtraRounded = (row === 0 && col === 0) ||
+                                                      (row === 0 && col === moduleCount - 7) ||
+                                                      (row === moduleCount - 7 && col === 0);
+
+                if (isTopLeftOfCornerExtraRounded) {
+                    const frameSize = cellSize * 7;
+                    const centerOffset = cellSize * 1;
+                    const centerSize = cellSize * 5;
+
+                    let frameX, frameY;
+                    if (row === 0 && col === 0) {
+                        frameX = this.config.margin;
+                        frameY = this.config.margin;
+                    } else if (row === 0 && col === moduleCount - 7) {
+                        frameX = col * cellSize + this.config.margin;
+                        frameY = this.config.margin;
+                    } else {
+                        frameX = this.config.margin;
+                        frameY = row * cellSize + this.config.margin;
+                    }
+
+                    // Draw outer 7x7 extra-rounded rectangle
+                    this.drawRoundedRect(frameX, frameY, frameSize, frameSize, frameSize * 0.4);
+
+                    // Fill center with background color
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.drawRoundedRect(frameX + centerOffset, frameY + centerOffset, centerSize, centerSize, centerSize * 0.4);
+                }
                 break;
 
             case 'dot':
-                this.ctx.beginPath();
-                this.ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize / 2, 0, Math.PI * 2);
-                this.ctx.fill();
+                // Draw single solid circular frame for entire corner square
+                const isTopLeftOfCornerDot = (row === 0 && col === 0) ||
+                                             (row === 0 && col === moduleCount - 7) ||
+                                             (row === moduleCount - 7 && col === 0);
+
+                if (isTopLeftOfCornerDot) {
+                    const frameSize = cellSize * 7;
+                    const centerOffset = cellSize * 1;
+                    const centerSize = cellSize * 5;
+
+                    let frameX, frameY;
+                    if (row === 0 && col === 0) {
+                        frameX = this.config.margin;
+                        frameY = this.config.margin;
+                    } else if (row === 0 && col === moduleCount - 7) {
+                        frameX = col * cellSize + this.config.margin;
+                        frameY = this.config.margin;
+                    } else {
+                        frameX = this.config.margin;
+                        frameY = row * cellSize + this.config.margin;
+                    }
+
+                    // Draw outer 7x7 circle
+                    this.ctx.beginPath();
+                    this.ctx.arc(frameX + frameSize / 2, frameY + frameSize / 2, frameSize / 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Fill center with background color
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.ctx.beginPath();
+                    this.ctx.arc(frameX + frameSize / 2, frameY + frameSize / 2, centerSize / 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
                 break;
 
             case 'classy':
-                this.drawOctagon(x, y, cellSize);
+                // Draw single solid octagon frame for entire corner square
+                const isTopLeftOfCornerClassy = (row === 0 && col === 0) ||
+                                                (row === 0 && col === moduleCount - 7) ||
+                                                (row === moduleCount - 7 && col === 0);
+
+                if (isTopLeftOfCornerClassy) {
+                    const frameSize = cellSize * 7;
+                    const centerOffset = cellSize * 1;
+                    const centerSize = cellSize * 5;
+
+                    let frameX, frameY;
+                    if (row === 0 && col === 0) {
+                        frameX = this.config.margin;
+                        frameY = this.config.margin;
+                    } else if (row === 0 && col === moduleCount - 7) {
+                        frameX = col * cellSize + this.config.margin;
+                        frameY = this.config.margin;
+                    } else {
+                        frameX = this.config.margin;
+                        frameY = row * cellSize + this.config.margin;
+                    }
+
+                    // Draw outer 7x7 octagon
+                    this.drawOctagon(frameX, frameY, frameSize);
+
+                    // Fill center with background color
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.drawOctagon(frameX + centerOffset, frameY + centerOffset, centerSize);
+                }
                 break;
 
             default:
@@ -372,13 +486,46 @@ class QRCodeGenerator {
 
         switch (this.config.cornerDotStyle) {
             case 'square':
-                this.ctx.fillRect(x, y, size, size);
+                // Draw single solid square frame for entire 3x3 corner dot area
+                const isTopLeftCornerDotSquare = (row === 2 && col === 2);
+                const isTopRightCornerDotSquare = (row === 2 && col === moduleCount - 5);
+                const isBottomLeftCornerDotSquare = (row === moduleCount - 5 && col === 2);
+
+                if (isTopLeftCornerDotSquare || isTopRightCornerDotSquare || isBottomLeftCornerDotSquare) {
+                    const fullAreaSize = size * 3;
+                    const frameThickness = size * 0.6;
+
+                    // Draw outer 3x3 square
+                    this.ctx.fillRect(x, y, fullAreaSize, fullAreaSize);
+
+                    // Fill center with background color to create frame
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.ctx.fillRect(x + frameThickness, y + frameThickness, fullAreaSize - frameThickness * 2, fullAreaSize - frameThickness * 2);
+                }
                 break;
 
             case 'dot':
-                this.ctx.beginPath();
-                this.ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
-                this.ctx.fill();
+                // Draw single solid circular frame for entire 3x3 corner dot area
+                const isTopLeftCornerDotCircle = (row === 2 && col === 2);
+                const isTopRightCornerDotCircle = (row === 2 && col === moduleCount - 5);
+                const isBottomLeftCornerDotCircle = (row === moduleCount - 5 && col === 2);
+
+                if (isTopLeftCornerDotCircle || isTopRightCornerDotCircle || isBottomLeftCornerDotCircle) {
+                    const fullAreaSize = size * 3;
+                    const outerRadius = fullAreaSize / 2;
+                    const innerRadius = fullAreaSize / 2 - size * 0.6;
+
+                    // Draw outer circle
+                    this.ctx.beginPath();
+                    this.ctx.arc(x + fullAreaSize / 2, y + fullAreaSize / 2, outerRadius, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Fill center with background color to create frame
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x + fullAreaSize / 2, y + fullAreaSize / 2, innerRadius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
                 break;
 
             case 'diamond':
@@ -402,15 +549,60 @@ class QRCodeGenerator {
                 break;
 
             case 'rounded':
-                this.drawRoundedRect(x, y, size, size, size * 0.25);
+                // Draw single solid rounded frame for entire 3x3 corner dot area
+                const isTopLeftCornerDotRounded = (row === 2 && col === 2);
+                const isTopRightCornerDotRounded = (row === 2 && col === moduleCount - 5);
+                const isBottomLeftCornerDotRounded = (row === moduleCount - 5 && col === 2);
+
+                if (isTopLeftCornerDotRounded || isTopRightCornerDotRounded || isBottomLeftCornerDotRounded) {
+                    const fullAreaSize = size * 3;
+                    const frameThickness = size * 0.6;
+
+                    // Draw outer 3x3 rounded rectangle
+                    this.drawRoundedRect(x, y, fullAreaSize, fullAreaSize, fullAreaSize * 0.25);
+
+                    // Fill center with background color to create frame
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.drawRoundedRect(x + frameThickness, y + frameThickness, fullAreaSize - frameThickness * 2, fullAreaSize - frameThickness * 2, (fullAreaSize - frameThickness * 2) * 0.25);
+                }
                 break;
 
             case 'extra-rounded':
-                this.drawRoundedRect(x, y, size, size, size * 0.4);
+                // Draw single solid extra-rounded frame for entire 3x3 corner dot area
+                const isTopLeftCornerDotExtraRounded = (row === 2 && col === 2);
+                const isTopRightCornerDotExtraRounded = (row === 2 && col === moduleCount - 5);
+                const isBottomLeftCornerDotExtraRounded = (row === moduleCount - 5 && col === 2);
+
+                if (isTopLeftCornerDotExtraRounded || isTopRightCornerDotExtraRounded || isBottomLeftCornerDotExtraRounded) {
+                    const fullAreaSize = size * 3;
+                    const frameThickness = size * 0.6;
+
+                    // Draw outer 3x3 extra-rounded rectangle
+                    this.drawRoundedRect(x, y, fullAreaSize, fullAreaSize, fullAreaSize * 0.4);
+
+                    // Fill center with background color to create frame
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.drawRoundedRect(x + frameThickness, y + frameThickness, fullAreaSize - frameThickness * 2, fullAreaSize - frameThickness * 2, (fullAreaSize - frameThickness * 2) * 0.4);
+                }
                 break;
 
             case 'classy':
-                this.drawOctagon(x, y, size);
+                // Draw single solid octagon frame for entire 3x3 corner dot area
+                const isTopLeftCornerDotClassy = (row === 2 && col === 2);
+                const isTopRightCornerDotClassy = (row === 2 && col === moduleCount - 5);
+                const isBottomLeftCornerDotClassy = (row === moduleCount - 5 && col === 2);
+
+                if (isTopLeftCornerDotClassy || isTopRightCornerDotClassy || isBottomLeftCornerDotClassy) {
+                    const fullAreaSize = size * 3;
+                    const frameThickness = size * 0.6;
+
+                    // Draw outer 3x3 octagon
+                    this.drawOctagon(x, y, fullAreaSize);
+
+                    // Fill center with background color to create frame
+                    this.ctx.fillStyle = this.config.backgroundColor;
+                    this.drawOctagon(x + frameThickness, y + frameThickness, fullAreaSize - frameThickness * 2);
+                }
                 break;
 
             default:
