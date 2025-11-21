@@ -410,27 +410,194 @@ class QRCodeGenerator {
         break;
 
       case "rounded":
-        this.drawRoundedRect(x, y, cellSize, cellSize, cellSize * 0.25);
+        // Draw single solid frame for entire corner square
+        // Only draw once at the top-left position of each corner
+        const isTopLeftOfCornerRounded =
+          (row === 0 && col === 0) ||
+          (row === 0 && col === moduleCount - 7) ||
+          (row === moduleCount - 7 && col === 0);
+
+        if (isTopLeftOfCornerRounded) {
+          const frameSize = cellSize * 7;
+          const centerOffset = cellSize * 1;
+          const centerSize = cellSize * 5;
+
+          // Determine the starting position for this corner's frame
+          let frameX, frameY;
+          if (row === 0 && col === 0) {
+            // Top-left corner
+            frameX = this.config.margin;
+            frameY = this.config.margin;
+          } else if (row === 0 && col === moduleCount - 7) {
+            // Top-right corner
+            frameX = col * cellSize + this.config.margin;
+            frameY = this.config.margin;
+          } else {
+            // Bottom-left corner
+            frameX = this.config.margin;
+            frameY = row * cellSize + this.config.margin;
+          }
+
+          // Draw outer 7x7 rounded rectangle
+          this.drawRoundedRect(
+            frameX,
+            frameY,
+            frameSize,
+            frameSize,
+            cellSize * 0.25
+          );
+
+          // Fill center with background color as rounded rectangle
+          this.ctx.fillStyle = this.config.backgroundColor;
+          this.drawRoundedRect(
+            frameX + centerOffset,
+            frameY + centerOffset,
+            centerSize,
+            centerSize,
+            cellSize * 0.25
+          );
+        }
+        // Skip drawing for all other positions in the corner square
         break;
 
       case "extra-rounded":
-        this.drawRoundedRect(x, y, cellSize, cellSize, cellSize * 0.4);
+        // Draw single solid frame for entire corner square
+        // Only draw once at the top-left position of each corner
+        const isTopLeftOfCornerExtraRounded =
+          (row === 0 && col === 0) ||
+          (row === 0 && col === moduleCount - 7) ||
+          (row === moduleCount - 7 && col === 0);
+
+        if (isTopLeftOfCornerExtraRounded) {
+          const frameSize = cellSize * 7;
+          const centerOffset = cellSize * 1;
+          const centerSize = cellSize * 5;
+
+          // Determine the starting position for this corner's frame
+          let frameX, frameY;
+          if (row === 0 && col === 0) {
+            // Top-left corner
+            frameX = this.config.margin;
+            frameY = this.config.margin;
+          } else if (row === 0 && col === moduleCount - 7) {
+            // Top-right corner
+            frameX = col * cellSize + this.config.margin;
+            frameY = this.config.margin;
+          } else {
+            // Bottom-left corner
+            frameX = this.config.margin;
+            frameY = row * cellSize + this.config.margin;
+          }
+
+          // Draw outer 7x7 extra-rounded rectangle
+          this.drawRoundedRect(
+            frameX,
+            frameY,
+            frameSize,
+            frameSize,
+            cellSize * 0.4
+          );
+
+          // Fill center with background color as extra-rounded rectangle
+          this.ctx.fillStyle = this.config.backgroundColor;
+          this.drawRoundedRect(
+            frameX + centerOffset,
+            frameY + centerOffset,
+            centerSize,
+            centerSize,
+            cellSize * 0.4
+          );
+        }
+        // Skip drawing for all other positions in the corner square
         break;
 
       case "dot":
-        this.ctx.beginPath();
-        this.ctx.arc(
-          x + cellSize / 2,
-          y + cellSize / 2,
-          cellSize / 2,
-          0,
-          Math.PI * 2
-        );
-        this.ctx.fill();
+        // Draw single solid circular frame for entire corner square
+        // Only draw once at the top-left position of each corner
+        const isTopLeftOfCornerDot =
+          (row === 0 && col === 0) ||
+          (row === 0 && col === moduleCount - 7) ||
+          (row === moduleCount - 7 && col === 0);
+
+        if (isTopLeftOfCornerDot) {
+          const frameSize = cellSize * 7;
+
+          // Determine the starting position for this corner's frame
+          let frameX, frameY;
+          if (row === 0 && col === 0) {
+            // Top-left corner
+            frameX = this.config.margin;
+            frameY = this.config.margin;
+          } else if (row === 0 && col === moduleCount - 7) {
+            // Top-right corner
+            frameX = col * cellSize + this.config.margin;
+            frameY = this.config.margin;
+          } else {
+            // Bottom-left corner
+            frameX = this.config.margin;
+            frameY = row * cellSize + this.config.margin;
+          }
+
+          // Draw outer circle (diameter ~7 modules)
+          const centerX = frameX + frameSize / 2;
+          const centerY = frameY + frameSize / 2;
+          const outerRadius = frameSize / 2;
+          const innerRadius = (cellSize * 5) / 2;
+
+          this.ctx.beginPath();
+          this.ctx.arc(centerX, centerY, outerRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          // Fill center with background color to create ring effect
+          this.ctx.fillStyle = this.config.backgroundColor;
+          this.ctx.beginPath();
+          this.ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+        // Skip drawing for all other positions in the corner square
         break;
 
       case "classy":
-        this.drawOctagon(x, y, cellSize);
+        // Draw single solid octagonal frame for entire corner square
+        // Only draw once at the top-left position of each corner
+        const isTopLeftOfCornerClassy =
+          (row === 0 && col === 0) ||
+          (row === 0 && col === moduleCount - 7) ||
+          (row === moduleCount - 7 && col === 0);
+
+        if (isTopLeftOfCornerClassy) {
+          const frameSize = cellSize * 7;
+          const centerOffset = cellSize * 1;
+          const centerSize = cellSize * 5;
+
+          // Determine the starting position for this corner's frame
+          let frameX, frameY;
+          if (row === 0 && col === 0) {
+            // Top-left corner
+            frameX = this.config.margin;
+            frameY = this.config.margin;
+          } else if (row === 0 && col === moduleCount - 7) {
+            // Top-right corner
+            frameX = col * cellSize + this.config.margin;
+            frameY = this.config.margin;
+          } else {
+            // Bottom-left corner
+            frameX = this.config.margin;
+            frameY = row * cellSize + this.config.margin;
+          }
+
+          // Draw outer 7x7 octagon
+          this.drawOctagon(frameX, frameY, frameSize);
+
+          // Fill center with background color as octagon
+          this.ctx.fillStyle = this.config.backgroundColor;
+          this.drawOctagon(
+            frameX + centerOffset,
+            frameY + centerOffset,
+            centerSize
+          );
+        }
+        // Skip drawing for all other positions in the corner square
         break;
 
       default:

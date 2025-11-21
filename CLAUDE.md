@@ -66,7 +66,7 @@ npx serve
 
 - `index.html`: HTML structure with controls panel and canvas preview
 - `style.css`: All styling including responsive design
-- `app.js`: Complete application logic (~805 lines)
+- `app.js`: Complete application logic (~712 lines)
 - `qrcode.min.js`: Third-party QR code data generation library
 - `README.md`: User-facing documentation
 
