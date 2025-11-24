@@ -54,6 +54,7 @@ class QRCodeGenerator {
       cornerDotStyle: "square",
       cornerDotColor: "#000000",
       logoSize: 20,
+      logoBackgroundColor: "#ffffff",
       canvasSize: 300,
       margin: 0,
     };
@@ -61,6 +62,9 @@ class QRCodeGenerator {
     this.initializeEventListeners();
     this.validateContrast();
     this.generateQRCode();
+
+    // Initialize preview background
+    this.changePreviewBackground("light");
   }
 
   initializeEventListeners() {
@@ -136,6 +140,13 @@ class QRCodeGenerator {
         this.generateQRCode();
       });
 
+    document
+      .getElementById("logo-bg-color")
+      .addEventListener("input", (e) => {
+        this.config.logoBackgroundColor = e.target.value;
+        this.generateQRCode();
+      });
+
     // Logo upload
     document.getElementById("logo-upload").addEventListener("change", (e) => {
       const file = e.target.files[0];
@@ -184,6 +195,20 @@ class QRCodeGenerator {
     document
       .getElementById("export-pdf")
       .addEventListener("click", () => this.exportAs("pdf"));
+
+    // Theme preset buttons
+    document.getElementById("theme-light").addEventListener("click", () => {
+      this.applyTheme("light");
+    });
+
+    document.getElementById("theme-dark").addEventListener("click", () => {
+      this.applyTheme("dark");
+    });
+
+    // Preview background selector
+    document.getElementById("preview-bg").addEventListener("change", (e) => {
+      this.changePreviewBackground(e.target.value);
+    });
   }
 
   validateContrast() {
@@ -246,6 +271,52 @@ class QRCodeGenerator {
     }
 
     return !hasWarnings;
+  }
+
+  applyTheme(theme) {
+    if (theme === "light") {
+      // Light theme: black patterns on white background
+      this.config.patternColor = "#000000";
+      this.config.backgroundColor = "#ffffff";
+      this.config.cornerSquareColor = "#000000";
+      this.config.cornerDotColor = "#000000";
+      this.config.logoBackgroundColor = "#ffffff";
+    } else if (theme === "dark") {
+      // Dark theme: white patterns on black background
+      this.config.patternColor = "#ffffff";
+      this.config.backgroundColor = "#000000";
+      this.config.cornerSquareColor = "#ffffff";
+      this.config.cornerDotColor = "#ffffff";
+      this.config.logoBackgroundColor = "#ffffff";
+    }
+
+    // Update color pickers in UI
+    document.getElementById("pattern-color").value = this.config.patternColor;
+    document.getElementById("bg-color").value = this.config.backgroundColor;
+    document.getElementById("corner-square-color").value = this.config.cornerSquareColor;
+    document.getElementById("corner-dot-color").value = this.config.cornerDotColor;
+    document.getElementById("logo-bg-color").value = this.config.logoBackgroundColor;
+
+    // Validate contrast and regenerate QR code
+    this.validateContrast();
+    this.generateQRCode();
+  }
+
+  changePreviewBackground(bgType) {
+    const qrContainer = document.querySelector(".qr-container");
+
+    // Remove existing background classes
+    qrContainer.classList.remove("bg-light", "bg-white", "bg-black");
+
+    // Add new background class
+    if (bgType === "white") {
+      qrContainer.classList.add("bg-white");
+    } else if (bgType === "black") {
+      qrContainer.classList.add("bg-black");
+    } else {
+      // Default to light gray
+      qrContainer.classList.add("bg-light");
+    }
   }
 
   generateQRCode() {
@@ -869,8 +940,8 @@ class QRCodeGenerator {
     const logoX = (this.config.canvasSize - logoSize) / 2;
     const logoY = (this.config.canvasSize - logoSize) / 2;
 
-    // Draw white background for logo
-    this.ctx.fillStyle = this.config.backgroundColor;
+    // Draw background for logo using independent color
+    this.ctx.fillStyle = this.config.logoBackgroundColor;
     this.ctx.fillRect(logoX - 10, logoY - 10, logoSize + 20, logoSize + 20);
 
     // Draw logo
@@ -963,10 +1034,10 @@ class QRCodeGenerator {
       const logoX = (this.config.canvasSize - logoSize) / 2;
       const logoY = (this.config.canvasSize - logoSize) / 2;
 
-      // Background for logo
+      // Background for logo using independent color
       svg += `\n        <rect x="${logoX - 10}" y="${logoY - 10}" width="${
         logoSize + 20
-      }" height="${logoSize + 20}" fill="${this.config.backgroundColor}"/>`;
+      }" height="${logoSize + 20}" fill="${this.config.logoBackgroundColor}"/>`;
     }
 
     svg += "\n    </g>\n</svg>";

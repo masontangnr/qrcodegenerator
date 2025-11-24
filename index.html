@@ -54,6 +54,15 @@
                     </div>
                 </div>
 
+                <!-- Theme Presets -->
+                <div class="control-group">
+                    <label>Theme Presets:</label>
+                    <div class="button-group">
+                        <button id="theme-light" class="theme-btn">Light Theme</button>
+                        <button id="theme-dark" class="theme-btn">Dark Theme</button>
+                    </div>
+                </div>
+
                 <!-- Pattern Colors -->
                 <div class="control-group">
                     <label for="pattern-color">Pattern Color:</label>
@@ -149,6 +158,11 @@
                     <span id="logo-size-value">20%</span>
                 </div>
 
+                <div class="control-group">
+                    <label for="logo-bg-color">Logo Background Color:</label>
+                    <input type="color" id="logo-bg-color" value="#ffffff">
+                </div>
+
                 <!-- Export Options -->
                 <div class="control-group export-buttons">
                     <label>Export QR Code:</label>
@@ -164,6 +178,14 @@
             <!-- QR Code Preview -->
             <div class="preview-panel">
                 <h2>Preview</h2>
+                <div class="preview-controls">
+                    <label for="preview-bg">Preview Background:</label>
+                    <select id="preview-bg">
+                        <option value="light">Light Gray</option>
+                        <option value="white">White</option>
+                        <option value="black">Black</option>
+                    </select>
+                </div>
                 <div class="qr-container">
                     <canvas id="qr-canvas"></canvas>
                 </div>
