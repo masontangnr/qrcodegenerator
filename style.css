@@ -334,3 +334,55 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* Contrast Validation Warnings */
+.contrast-warning {
+    margin-top: 8px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    display: none;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.contrast-warning.critical {
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    color: #856404;
+}
+
+.contrast-warning.info {
+    background-color: #d1ecf1;
+    border: 2px solid #17a2b8;
+    color: #0c5460;
+}
+
+.contrast-warning.success {
+    background-color: #d4edda;
+    border: 2px solid #28a745;
+    color: #155724;
+}
+
+.warning-icon,
+.info-icon,
+.success-icon {
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.contrast-warning strong {
+    display: block;
+    margin-bottom: 3px;
+}

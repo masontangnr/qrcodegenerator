@@ -3,6 +3,39 @@
  * Features: Custom patterns, corner styles, logo support, and multiple export formats
  */
 
+// Utility functions for contrast validation
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+
+function getRelativeLuminance(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return 0;
+
+  const rsRGB = rgb.r / 255;
+  const gsRGB = rgb.g / 255;
+  const bsRGB = rgb.b / 255;
+
+  const r = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+  const g = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+  const b = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function getContrastRatio(color1, color2) {
+  const lum1 = getRelativeLuminance(color1);
+  const lum2 = getRelativeLuminance(color2);
+  const lighter = Math.max(lum1, lum2);
+  const darker = Math.min(lum1, lum2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 class QRCodeGenerator {
   constructor() {
     this.canvas = document.getElementById("qr-canvas");
@@ -26,6 +59,7 @@ class QRCodeGenerator {
     };
 
     this.initializeEventListeners();
+    this.validateContrast();
     this.generateQRCode();
   }
 
@@ -76,11 +110,13 @@ class QRCodeGenerator {
     // Color pickers
     document.getElementById("pattern-color").addEventListener("input", (e) => {
       this.config.patternColor = e.target.value;
+      this.validateContrast();
       this.generateQRCode();
     });
 
     document.getElementById("bg-color").addEventListener("input", (e) => {
       this.config.backgroundColor = e.target.value;
+      this.validateContrast();
       this.generateQRCode();
     });
 
@@ -88,6 +124,7 @@ class QRCodeGenerator {
       .getElementById("corner-square-color")
       .addEventListener("input", (e) => {
         this.config.cornerSquareColor = e.target.value;
+        this.validateContrast();
         this.generateQRCode();
       });
 
@@ -95,6 +132,7 @@ class QRCodeGenerator {
       .getElementById("corner-dot-color")
       .addEventListener("input", (e) => {
         this.config.cornerDotColor = e.target.value;
+        this.validateContrast();
         this.generateQRCode();
       });
 
@@ -146,6 +184,68 @@ class QRCodeGenerator {
     document
       .getElementById("export-pdf")
       .addEventListener("click", () => this.exportAs("pdf"));
+  }
+
+  validateContrast() {
+    const MIN_RATIO = 3.0;
+    const RECOMMENDED_RATIO = 4.5;
+
+    const validations = {
+      pattern: {
+        ratio: getContrastRatio(this.config.patternColor, this.config.backgroundColor),
+        label: 'Pattern Color',
+        elementId: 'pattern-color-warning'
+      },
+      cornerSquare: {
+        ratio: getContrastRatio(this.config.cornerSquareColor, this.config.backgroundColor),
+        label: 'Corner Square Color',
+        elementId: 'corner-square-color-warning'
+      },
+      cornerDot: {
+        ratio: getContrastRatio(this.config.cornerDotColor, this.config.backgroundColor),
+        label: 'Corner Dot Color',
+        elementId: 'corner-dot-color-warning'
+      }
+    };
+
+    let hasWarnings = false;
+
+    for (const validation of Object.values(validations)) {
+      const warningElement = document.getElementById(validation.elementId);
+
+      if (!warningElement) continue; // Skip if element doesn't exist yet
+
+      if (validation.ratio < MIN_RATIO) {
+        // Critical warning
+        warningElement.innerHTML = `
+          <span class="warning-icon">⚠️</span>
+          <strong>Low Contrast!</strong> Current ratio: ${validation.ratio.toFixed(2)}:1
+          (minimum: ${MIN_RATIO}:1). QR code may be difficult to scan.
+        `;
+        warningElement.className = 'contrast-warning critical';
+        warningElement.style.display = 'block';
+        hasWarnings = true;
+      } else if (validation.ratio < RECOMMENDED_RATIO) {
+        // Informational warning
+        warningElement.innerHTML = `
+          <span class="info-icon">ℹ️</span>
+          Contrast: ${validation.ratio.toFixed(2)}:1.
+          Consider ${RECOMMENDED_RATIO}:1+ for optimal scanning.
+        `;
+        warningElement.className = 'contrast-warning info';
+        warningElement.style.display = 'block';
+      } else {
+        // Good contrast
+        warningElement.innerHTML = `
+          <span class="success-icon">✓</span>
+          Good contrast: ${validation.ratio.toFixed(2)}:1
+        `;
+        warningElement.className = 'contrast-warning success';
+        warningElement.style.display = 'block';
+      }
+    }
+
+    return !hasWarnings;
   }
 
   generateQRCode() {
