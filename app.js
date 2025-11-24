@@ -475,8 +475,6 @@ class QRCodeGenerator {
 
         if (isTopLeftOfCorner) {
           const frameSize = cellSize * 7;
-          const centerOffset = cellSize * 1;
-          const centerSize = cellSize * 5;
 
           // Determine the starting position for this corner's frame
           let frameX, frameY;
@@ -494,17 +492,15 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw outer 7x7 square
-          this.ctx.fillRect(frameX, frameY, frameSize, frameSize);
-
-          // Fill center with background color
-          this.ctx.fillStyle = this.config.backgroundColor;
-          this.ctx.fillRect(
-            frameX + centerOffset,
-            frameY + centerOffset,
-            centerSize,
-            centerSize
-          );
+          // Draw only frame edges (not solid square) to let background show through
+          // Top edge (row 0, all 7 cols)
+          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
+          // Bottom edge (row 6, all 7 cols)
+          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
+          // Left edge (rows 1-5, col 0)
+          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
+          // Right edge (rows 1-5, col 6)
+          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
         }
         // Skip drawing for all other positions in the corner square
         break;
@@ -519,8 +515,6 @@ class QRCodeGenerator {
 
         if (isTopLeftOfCornerRounded) {
           const frameSize = cellSize * 7;
-          const centerOffset = cellSize * 1;
-          const centerSize = cellSize * 5;
 
           // Determine the starting position for this corner's frame
           let frameX, frameY;
@@ -538,24 +532,15 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw outer 7x7 rounded rectangle
-          this.drawRoundedRect(
-            frameX,
-            frameY,
-            frameSize,
-            frameSize,
-            cellSize * 0.25
-          );
-
-          // Fill center with background color as rounded rectangle
-          this.ctx.fillStyle = this.config.backgroundColor;
-          this.drawRoundedRect(
-            frameX + centerOffset,
-            frameY + centerOffset,
-            centerSize,
-            centerSize,
-            cellSize * 0.25
-          );
+          // Draw only frame edges (not solid square) to let background show through
+          // Top edge (row 0, all 7 cols)
+          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
+          // Bottom edge (row 6, all 7 cols)
+          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
+          // Left edge (rows 1-5, col 0)
+          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
+          // Right edge (rows 1-5, col 6)
+          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
         }
         // Skip drawing for all other positions in the corner square
         break;
@@ -570,8 +555,6 @@ class QRCodeGenerator {
 
         if (isTopLeftOfCornerExtraRounded) {
           const frameSize = cellSize * 7;
-          const centerOffset = cellSize * 1;
-          const centerSize = cellSize * 5;
 
           // Determine the starting position for this corner's frame
           let frameX, frameY;
@@ -589,24 +572,15 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw outer 7x7 extra-rounded rectangle
-          this.drawRoundedRect(
-            frameX,
-            frameY,
-            frameSize,
-            frameSize,
-            cellSize * 0.4
-          );
-
-          // Fill center with background color as extra-rounded rectangle
-          this.ctx.fillStyle = this.config.backgroundColor;
-          this.drawRoundedRect(
-            frameX + centerOffset,
-            frameY + centerOffset,
-            centerSize,
-            centerSize,
-            cellSize * 0.4
-          );
+          // Draw only frame edges (not solid square) to let background show through
+          // Top edge (row 0, all 7 cols)
+          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
+          // Bottom edge (row 6, all 7 cols)
+          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
+          // Left edge (rows 1-5, col 0)
+          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
+          // Right edge (rows 1-5, col 6)
+          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
         }
         // Skip drawing for all other positions in the corner square
         break;
@@ -638,21 +612,15 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw outer circle (diameter ~7 modules)
-          const centerX = frameX + frameSize / 2;
-          const centerY = frameY + frameSize / 2;
-          const outerRadius = frameSize / 2;
-          const innerRadius = (cellSize * 5) / 2;
-
-          this.ctx.beginPath();
-          this.ctx.arc(centerX, centerY, outerRadius, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Fill center with background color to create ring effect
-          this.ctx.fillStyle = this.config.backgroundColor;
-          this.ctx.beginPath();
-          this.ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
-          this.ctx.fill();
+          // Draw only frame edges (not solid square) to let background show through
+          // Top edge (row 0, all 7 cols)
+          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
+          // Bottom edge (row 6, all 7 cols)
+          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
+          // Left edge (rows 1-5, col 0)
+          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
+          // Right edge (rows 1-5, col 6)
+          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
         }
         // Skip drawing for all other positions in the corner square
         break;
@@ -667,8 +635,6 @@ class QRCodeGenerator {
 
         if (isTopLeftOfCornerClassy) {
           const frameSize = cellSize * 7;
-          const centerOffset = cellSize * 1;
-          const centerSize = cellSize * 5;
 
           // Determine the starting position for this corner's frame
           let frameX, frameY;
@@ -686,16 +652,15 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw outer 7x7 octagon
-          this.drawOctagon(frameX, frameY, frameSize);
-
-          // Fill center with background color as octagon
-          this.ctx.fillStyle = this.config.backgroundColor;
-          this.drawOctagon(
-            frameX + centerOffset,
-            frameY + centerOffset,
-            centerSize
-          );
+          // Draw only frame edges (not solid square) to let background show through
+          // Top edge (row 0, all 7 cols)
+          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
+          // Bottom edge (row 6, all 7 cols)
+          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
+          // Left edge (rows 1-5, col 0)
+          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
+          // Right edge (rows 1-5, col 6)
+          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
         }
         // Skip drawing for all other positions in the corner square
         break;
