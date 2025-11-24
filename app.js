@@ -563,15 +563,15 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw only frame edges (not solid square) to let background show through
-          // Top edge (row 0, all 7 cols)
-          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
-          // Bottom edge (row 6, all 7 cols)
-          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
-          // Left edge (rows 1-5, col 0)
-          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
-          // Right edge (rows 1-5, col 6)
-          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
+          // Draw continuous frame outline
+          this.ctx.strokeStyle = this.config.cornerSquareColor;
+          this.ctx.lineWidth = cellSize;
+          this.ctx.strokeRect(
+            frameX + cellSize / 2,
+            frameY + cellSize / 2,
+            frameSize - cellSize,
+            frameSize - cellSize
+          );
         }
         // Skip drawing for all other positions in the corner square
         break;
@@ -603,15 +603,19 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw only frame edges (not solid square) to let background show through
-          // Top edge (row 0, all 7 cols)
-          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
-          // Bottom edge (row 6, all 7 cols)
-          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
-          // Left edge (rows 1-5, col 0)
-          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
-          // Right edge (rows 1-5, col 6)
-          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
+          // Draw continuous rounded frame outline
+          const radius = cellSize * 0.4;
+          this.ctx.strokeStyle = this.config.cornerSquareColor;
+          this.ctx.lineWidth = cellSize;
+          this.ctx.beginPath();
+          this.ctx.roundRect(
+            frameX + cellSize / 2,
+            frameY + cellSize / 2,
+            frameSize - cellSize,
+            frameSize - cellSize,
+            radius
+          );
+          this.ctx.stroke();
         }
         // Skip drawing for all other positions in the corner square
         break;
@@ -643,15 +647,19 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw only frame edges (not solid square) to let background show through
-          // Top edge (row 0, all 7 cols)
-          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
-          // Bottom edge (row 6, all 7 cols)
-          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
-          // Left edge (rows 1-5, col 0)
-          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
-          // Right edge (rows 1-5, col 6)
-          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
+          // Draw continuous extra-rounded frame outline with larger radius
+          const radius = cellSize * 1.5;
+          this.ctx.strokeStyle = this.config.cornerSquareColor;
+          this.ctx.lineWidth = cellSize;
+          this.ctx.beginPath();
+          this.ctx.roundRect(
+            frameX + cellSize / 2,
+            frameY + cellSize / 2,
+            frameSize - cellSize,
+            frameSize - cellSize,
+            radius
+          );
+          this.ctx.stroke();
         }
         // Skip drawing for all other positions in the corner square
         break;
@@ -683,15 +691,15 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw only frame edges (not solid square) to let background show through
-          // Top edge (row 0, all 7 cols)
-          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
-          // Bottom edge (row 6, all 7 cols)
-          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
-          // Left edge (rows 1-5, col 0)
-          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
-          // Right edge (rows 1-5, col 6)
-          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
+          // Draw continuous circular frame outline
+          const centerX = frameX + frameSize / 2;
+          const centerY = frameY + frameSize / 2;
+          const radius = (frameSize - cellSize) / 2;
+          this.ctx.strokeStyle = this.config.cornerSquareColor;
+          this.ctx.lineWidth = cellSize;
+          this.ctx.beginPath();
+          this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          this.ctx.stroke();
         }
         // Skip drawing for all other positions in the corner square
         break;
@@ -723,15 +731,25 @@ class QRCodeGenerator {
             frameY = row * cellSize + this.config.margin;
           }
 
-          // Draw only frame edges (not solid square) to let background show through
-          // Top edge (row 0, all 7 cols)
-          this.ctx.fillRect(frameX, frameY, frameSize, cellSize);
-          // Bottom edge (row 6, all 7 cols)
-          this.ctx.fillRect(frameX, frameY + cellSize * 6, frameSize, cellSize);
-          // Left edge (rows 1-5, col 0)
-          this.ctx.fillRect(frameX, frameY + cellSize, cellSize, cellSize * 5);
-          // Right edge (rows 1-5, col 6)
-          this.ctx.fillRect(frameX + cellSize * 6, frameY + cellSize, cellSize, cellSize * 5);
+          // Draw continuous octagonal frame outline
+          const rectX = frameX + cellSize / 2;
+          const rectY = frameY + cellSize / 2;
+          const rectSize = frameSize - cellSize;
+          const inset = rectSize * 0.3;
+
+          this.ctx.strokeStyle = this.config.cornerSquareColor;
+          this.ctx.lineWidth = cellSize;
+          this.ctx.beginPath();
+          this.ctx.moveTo(rectX + inset, rectY);
+          this.ctx.lineTo(rectX + rectSize - inset, rectY);
+          this.ctx.lineTo(rectX + rectSize, rectY + inset);
+          this.ctx.lineTo(rectX + rectSize, rectY + rectSize - inset);
+          this.ctx.lineTo(rectX + rectSize - inset, rectY + rectSize);
+          this.ctx.lineTo(rectX + inset, rectY + rectSize);
+          this.ctx.lineTo(rectX, rectY + rectSize - inset);
+          this.ctx.lineTo(rectX, rectY + inset);
+          this.ctx.closePath();
+          this.ctx.stroke();
         }
         // Skip drawing for all other positions in the corner square
         break;
