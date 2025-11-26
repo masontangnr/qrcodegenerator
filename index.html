@@ -253,6 +253,31 @@
                     </div>
                 </div>
 
+                <!-- Export Settings -->
+                <div class="control-group">
+                    <label for="export-dpi">Export DPI:</label>
+                    <select id="export-dpi">
+                        <option value="72">72 DPI (Screen)</option>
+                        <option value="150">150 DPI (Draft Print)</option>
+                        <option value="300" selected>300 DPI (High Quality)</option>
+                        <option value="600">600 DPI (Professional)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="export-size">Physical Size:</label>
+                    <select id="export-size">
+                        <option value="1">1 inch</option>
+                        <option value="2">2 inches</option>
+                        <option value="3" selected>3 inches</option>
+                        <option value="4">4 inches</option>
+                        <option value="5">5 inches</option>
+                    </select>
+                    <div id="export-dimensions" style="margin-top: 5px; font-size: 0.9em; color: #666;">
+                        Export size: 900 × 900 pixels
+                    </div>
+                </div>
+
                 <!-- Export Options -->
                 <div class="control-group export-buttons">
                     <label>Export QR Code:</label>
@@ -284,6 +309,7 @@
     </div>
 
     <script src="qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

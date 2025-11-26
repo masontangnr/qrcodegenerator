@@ -122,6 +122,8 @@ class QRCodeGenerator {
       logoBackgroundColor: "#ffffff",
       canvasSize: 300,
       margin: 0,
+      exportDPI: 300,
+      exportSize: 3, // in inches
     };
 
     this.initializeEventListeners();
@@ -294,6 +296,20 @@ class QRCodeGenerator {
     document.getElementById("preview-bg").addEventListener("change", (e) => {
       this.changePreviewBackground(e.target.value);
     });
+
+    // Export settings
+    document.getElementById("export-dpi").addEventListener("change", (e) => {
+      this.config.exportDPI = parseInt(e.target.value);
+      this.updateExportDimensions();
+    });
+
+    document.getElementById("export-size").addEventListener("change", (e) => {
+      this.config.exportSize = parseFloat(e.target.value);
+      this.updateExportDimensions();
+    });
+
+    // Initialize export dimensions display
+    this.updateExportDimensions();
   }
 
   validateContrast() {
@@ -411,6 +427,14 @@ class QRCodeGenerator {
     }
   }
 
+  updateExportDimensions() {
+    const pixels = Math.round(this.config.exportSize * this.config.exportDPI);
+    const dimensionsText = document.getElementById("export-dimensions");
+    if (dimensionsText) {
+      dimensionsText.textContent = `Export size: ${pixels} × ${pixels} pixels`;
+    }
+  }
+
   // CMYK helper methods
   setupCmykToggle(colorPickerId) {
     const colorPicker = document.getElementById(colorPickerId);
@@ -510,25 +534,25 @@ class QRCodeGenerator {
     }
   }
 
-  drawQRCode() {
+  // Reusable method to render QR code to any canvas at any size
+  renderQRToCanvas(canvas, ctx, size, margin = 0) {
     const moduleCount = this.qrData.getModuleCount();
-    const cellSize =
-      (this.config.canvasSize - 2 * this.config.margin) / moduleCount;
+    const cellSize = (size - 2 * margin) / moduleCount;
 
     // Set canvas size
-    this.canvas.width = this.config.canvasSize;
-    this.canvas.height = this.config.canvasSize;
+    canvas.width = size;
+    canvas.height = size;
 
     // Clear canvas
-    this.ctx.fillStyle = this.config.backgroundColor;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.fillStyle = this.config.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw QR code modules
     for (let row = 0; row < moduleCount; row++) {
       for (let col = 0; col < moduleCount; col++) {
         if (this.qrData.isDark(row, col)) {
-          const x = col * cellSize + this.config.margin;
-          const y = row * cellSize + this.config.margin;
+          const x = col * cellSize + margin;
+          const y = row * cellSize + margin;
 
           // Check if this is a corner position element
           const isCornerSquare = this.isCornerSquarePosition(
@@ -539,14 +563,14 @@ class QRCodeGenerator {
           const isCornerDot = this.isCornerDotPosition(row, col, moduleCount);
 
           if (isCornerSquare) {
-            this.ctx.fillStyle = this.config.cornerSquareColor;
-            this.drawCornerSquare(x, y, cellSize, row, col, moduleCount);
+            ctx.fillStyle = this.config.cornerSquareColor;
+            this.drawCornerSquareToContext(ctx, x, y, cellSize, row, col, moduleCount);
           } else if (isCornerDot) {
-            this.ctx.fillStyle = this.config.cornerDotColor;
-            this.drawCornerDot(x, y, cellSize, row, col, moduleCount);
+            ctx.fillStyle = this.config.cornerDotColor;
+            this.drawCornerDotToContext(ctx, x, y, cellSize, row, col, moduleCount);
           } else {
-            this.ctx.fillStyle = this.config.patternColor;
-            this.drawModule(x, y, cellSize, row, col);
+            ctx.fillStyle = this.config.patternColor;
+            this.drawModuleToContext(ctx, x, y, cellSize, row, col);
           }
         }
       }
@@ -554,8 +578,17 @@ class QRCodeGenerator {
 
     // Draw logo if present
     if (this.logoImage) {
-      this.drawLogo();
+      this.drawLogoToContext(ctx, size);
     }
+  }
+
+  drawQRCode() {
+    this.renderQRToCanvas(
+      this.canvas,
+      this.ctx,
+      this.config.canvasSize,
+      this.config.margin
+    );
   }
 
   isCornerSquarePosition(row, col, moduleCount) {
@@ -1143,6 +1176,44 @@ class QRCodeGenerator {
     this.ctx.drawImage(this.logoImage, logoX, logoY, logoSize, logoSize);
   }
 
+  // Context-aware wrapper methods for high-res rendering
+  drawModuleToContext(ctx, x, y, size, row, col) {
+    const originalCtx = this.ctx;
+    this.ctx = ctx;
+    this.drawModule(x, y, size, row, col);
+    this.ctx = originalCtx;
+  }
+
+  drawCornerSquareToContext(ctx, x, y, size, row, col, moduleCount) {
+    const originalCtx = this.ctx;
+    const originalCanvasSize = this.config.canvasSize;
+    this.ctx = ctx;
+    this.config.canvasSize = ctx.canvas.width;
+    this.drawCornerSquare(x, y, size, row, col, moduleCount);
+    this.config.canvasSize = originalCanvasSize;
+    this.ctx = originalCtx;
+  }
+
+  drawCornerDotToContext(ctx, x, y, size, row, col, moduleCount) {
+    const originalCtx = this.ctx;
+    const originalCanvasSize = this.config.canvasSize;
+    this.ctx = ctx;
+    this.config.canvasSize = ctx.canvas.width;
+    this.drawCornerDot(x, y, size, row, col, moduleCount);
+    this.config.canvasSize = originalCanvasSize;
+    this.ctx = originalCtx;
+  }
+
+  drawLogoToContext(ctx, canvasSize) {
+    const originalCtx = this.ctx;
+    const originalCanvasSize = this.config.canvasSize;
+    this.ctx = ctx;
+    this.config.canvasSize = canvasSize;
+    this.drawLogo();
+    this.config.canvasSize = originalCanvasSize;
+    this.ctx = originalCtx;
+  }
+
   exportAs(format) {
     switch (format) {
       case "png":
@@ -1161,16 +1232,38 @@ class QRCodeGenerator {
   }
 
   exportPNG() {
+    // Calculate high-resolution export size
+    const exportSize = Math.round(this.config.exportSize * this.config.exportDPI);
+
+    // Create temporary canvas for high-res rendering
+    const exportCanvas = document.createElement("canvas");
+    const exportCtx = exportCanvas.getContext("2d");
+
+    // Render QR code at high resolution
+    this.renderQRToCanvas(exportCanvas, exportCtx, exportSize, 0);
+
+    // Export high-res canvas
     const link = document.createElement("a");
     link.download = "qrcode.png";
-    link.href = this.canvas.toDataURL("image/png");
+    link.href = exportCanvas.toDataURL("image/png");
     link.click();
   }
 
   exportJPG() {
+    // Calculate high-resolution export size
+    const exportSize = Math.round(this.config.exportSize * this.config.exportDPI);
+
+    // Create temporary canvas for high-res rendering
+    const exportCanvas = document.createElement("canvas");
+    const exportCtx = exportCanvas.getContext("2d");
+
+    // Render QR code at high resolution
+    this.renderQRToCanvas(exportCanvas, exportCtx, exportSize, 0);
+
+    // Export high-res canvas
     const link = document.createElement("a");
     link.download = "qrcode.jpg";
-    link.href = this.canvas.toDataURL("image/jpeg", 0.95);
+    link.href = exportCanvas.toDataURL("image/jpeg", 0.95);
     link.click();
   }
 
@@ -1248,53 +1341,42 @@ class QRCodeGenerator {
   }
 
   exportPDF() {
-    // Create a simple PDF using canvas
-    // For a real implementation, you'd use a library like jsPDF
-    // This creates a basic PDF with the QR code as an image
+    // Check if jsPDF is available
+    if (typeof window.jspdf === "undefined") {
+      alert("PDF library not loaded. Please refresh the page and try again.");
+      return;
+    }
 
-    const imgData = this.canvas.toDataURL("image/png");
+    // Calculate high-resolution export size
+    const exportSize = Math.round(this.config.exportSize * this.config.exportDPI);
 
-    // Simple PDF generation
-    const pdfContent = `%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${this.config.canvasSize} ${this.config.canvasSize}] /Contents 4 0 R >>
-endobj
-4 0 obj
-<< /Length 0 >>
-stream
-endstream
-endobj
-xref
-0 5
-0000000000 65535 f
-0000000009 00000 n
-0000000058 00000 n
-0000000115 00000 n
-0000000229 00000 n
-trailer
-<< /Size 5 /Root 1 0 R >>
-startxref
-278
-%%EOF`;
+    // Create temporary canvas for high-res rendering
+    const exportCanvas = document.createElement("canvas");
+    const exportCtx = exportCanvas.getContext("2d");
 
-    // For now, we'll export as PNG with PDF extension
-    // In production, use jsPDF library for proper PDF generation
-    const link = document.createElement("a");
-    link.download = "qrcode.pdf";
+    // Render QR code at high resolution
+    this.renderQRToCanvas(exportCanvas, exportCtx, exportSize, 0);
 
-    // Note: This is a simplified PDF export. For production use, integrate jsPDF
-    alert(
-      "PDF export: For best results, please use the PNG export and convert to PDF using external tools, or we can integrate jsPDF library for proper PDF support."
-    );
+    // Convert canvas to image data
+    const imgData = exportCanvas.toDataURL("image/png");
 
-    // Fall back to PNG export
-    this.exportPNG();
+    // Create PDF with proper dimensions
+    // jsPDF dimensions are in mm by default
+    const { jsPDF } = window.jspdf;
+    const sizeInMM = this.config.exportSize * 25.4; // Convert inches to mm
+
+    // Create square PDF with exact dimensions
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: [sizeInMM, sizeInMM]
+    });
+
+    // Add image to PDF at full size (0,0 position, full width and height)
+    pdf.addImage(imgData, "PNG", 0, 0, sizeInMM, sizeInMM);
+
+    // Save the PDF
+    pdf.save("qrcode.pdf");
   }
 }
 
