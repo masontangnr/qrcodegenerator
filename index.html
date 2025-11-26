@@ -67,12 +67,48 @@
                 <div class="control-group">
                     <label for="pattern-color">Pattern Color:</label>
                     <input type="color" id="pattern-color" value="#000000">
+                    <div class="cmyk-container" id="pattern-color-cmyk" style="display: none;">
+                        <div class="cmyk-slider">
+                            <label>C: <span id="pattern-c-value">0</span>%</label>
+                            <input type="range" id="pattern-c" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>M: <span id="pattern-m-value">0</span>%</label>
+                            <input type="range" id="pattern-m" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>Y: <span id="pattern-y-value">0</span>%</label>
+                            <input type="range" id="pattern-y" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>K: <span id="pattern-k-value">100</span>%</label>
+                            <input type="range" id="pattern-k" min="0" max="100" value="100">
+                        </div>
+                    </div>
                     <div id="pattern-color-warning" class="contrast-warning" style="display: none;"></div>
                 </div>
 
                 <div class="control-group">
                     <label for="bg-color">Background Color:</label>
                     <input type="color" id="bg-color" value="#ffffff">
+                    <div class="cmyk-container" id="bg-color-cmyk" style="display: none;">
+                        <div class="cmyk-slider">
+                            <label>C: <span id="bg-c-value">0</span>%</label>
+                            <input type="range" id="bg-c" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>M: <span id="bg-m-value">0</span>%</label>
+                            <input type="range" id="bg-m" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>Y: <span id="bg-y-value">0</span>%</label>
+                            <input type="range" id="bg-y" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>K: <span id="bg-k-value">0</span>%</label>
+                            <input type="range" id="bg-k" min="0" max="100" value="0">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Corner Square Style -->
@@ -105,6 +141,24 @@
                 <div class="control-group">
                     <label for="corner-square-color">Corner Square Color:</label>
                     <input type="color" id="corner-square-color" value="#000000">
+                    <div class="cmyk-container" id="corner-square-color-cmyk" style="display: none;">
+                        <div class="cmyk-slider">
+                            <label>C: <span id="corner-square-c-value">0</span>%</label>
+                            <input type="range" id="corner-square-c" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>M: <span id="corner-square-m-value">0</span>%</label>
+                            <input type="range" id="corner-square-m" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>Y: <span id="corner-square-y-value">0</span>%</label>
+                            <input type="range" id="corner-square-y" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>K: <span id="corner-square-k-value">100</span>%</label>
+                            <input type="range" id="corner-square-k" min="0" max="100" value="100">
+                        </div>
+                    </div>
                     <div id="corner-square-color-warning" class="contrast-warning" style="display: none;"></div>
                 </div>
 
@@ -142,6 +196,24 @@
                 <div class="control-group">
                     <label for="corner-dot-color">Corner Dot Color:</label>
                     <input type="color" id="corner-dot-color" value="#000000">
+                    <div class="cmyk-container" id="corner-dot-color-cmyk" style="display: none;">
+                        <div class="cmyk-slider">
+                            <label>C: <span id="corner-dot-c-value">0</span>%</label>
+                            <input type="range" id="corner-dot-c" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>M: <span id="corner-dot-m-value">0</span>%</label>
+                            <input type="range" id="corner-dot-m" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>Y: <span id="corner-dot-y-value">0</span>%</label>
+                            <input type="range" id="corner-dot-y" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>K: <span id="corner-dot-k-value">100</span>%</label>
+                            <input type="range" id="corner-dot-k" min="0" max="100" value="100">
+                        </div>
+                    </div>
                     <div id="corner-dot-color-warning" class="contrast-warning" style="display: none;"></div>
                 </div>
 
@@ -161,6 +233,24 @@
                 <div class="control-group">
                     <label for="logo-bg-color">Logo Background Color:</label>
                     <input type="color" id="logo-bg-color" value="#ffffff">
+                    <div class="cmyk-container" id="logo-bg-color-cmyk" style="display: none;">
+                        <div class="cmyk-slider">
+                            <label>C: <span id="logo-bg-c-value">0</span>%</label>
+                            <input type="range" id="logo-bg-c" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>M: <span id="logo-bg-m-value">0</span>%</label>
+                            <input type="range" id="logo-bg-m" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>Y: <span id="logo-bg-y-value">0</span>%</label>
+                            <input type="range" id="logo-bg-y" min="0" max="100" value="0">
+                        </div>
+                        <div class="cmyk-slider">
+                            <label>K: <span id="logo-bg-k-value">0</span>%</label>
+                            <input type="range" id="logo-bg-k" min="0" max="100" value="0">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Export Options -->

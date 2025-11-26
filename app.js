@@ -36,6 +36,71 @@ function getContrastRatio(color1, color2) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+// CMYK color conversion functions
+function rgbToHex(r, g, b) {
+  return "#" + [r, g, b].map(x => {
+    const hex = Math.round(x).toString(16);
+    return hex.length === 1 ? "0" + hex : hex;
+  }).join("");
+}
+
+function rgbToCmyk(r, g, b) {
+  // Normalize RGB values to 0-1
+  const rNorm = r / 255;
+  const gNorm = g / 255;
+  const bNorm = b / 255;
+
+  // Calculate K (black)
+  const k = 1 - Math.max(rNorm, gNorm, bNorm);
+
+  // Handle pure black case
+  if (k === 1) {
+    return { c: 0, m: 0, y: 0, k: 100 };
+  }
+
+  // Calculate CMY
+  const c = ((1 - rNorm - k) / (1 - k)) * 100;
+  const m = ((1 - gNorm - k) / (1 - k)) * 100;
+  const y = ((1 - bNorm - k) / (1 - k)) * 100;
+
+  return {
+    c: Math.round(c),
+    m: Math.round(m),
+    y: Math.round(y),
+    k: Math.round(k * 100)
+  };
+}
+
+function cmykToRgb(c, m, y, k) {
+  // Normalize CMYK values to 0-1
+  const cNorm = c / 100;
+  const mNorm = m / 100;
+  const yNorm = y / 100;
+  const kNorm = k / 100;
+
+  // Calculate RGB
+  const r = 255 * (1 - cNorm) * (1 - kNorm);
+  const g = 255 * (1 - mNorm) * (1 - kNorm);
+  const b = 255 * (1 - yNorm) * (1 - kNorm);
+
+  return {
+    r: Math.round(r),
+    g: Math.round(g),
+    b: Math.round(b)
+  };
+}
+
+function hexToCmyk(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return { c: 0, m: 0, y: 0, k: 100 };
+  return rgbToCmyk(rgb.r, rgb.g, rgb.b);
+}
+
+function cmykToHex(c, m, y, k) {
+  const rgb = cmykToRgb(c, m, y, k);
+  return rgbToHex(rgb.r, rgb.g, rgb.b);
+}
+
 class QRCodeGenerator {
   constructor() {
     this.canvas = document.getElementById("qr-canvas");
@@ -60,6 +125,7 @@ class QRCodeGenerator {
     };
 
     this.initializeEventListeners();
+    this.initializeCmykValues();
     this.validateContrast();
     this.generateQRCode();
 
@@ -114,12 +180,14 @@ class QRCodeGenerator {
     // Color pickers
     document.getElementById("pattern-color").addEventListener("input", (e) => {
       this.config.patternColor = e.target.value;
+      this.updateCmykFromHex("pattern", e.target.value);
       this.validateContrast();
       this.generateQRCode();
     });
 
     document.getElementById("bg-color").addEventListener("input", (e) => {
       this.config.backgroundColor = e.target.value;
+      this.updateCmykFromHex("bg", e.target.value);
       this.validateContrast();
       this.generateQRCode();
     });
@@ -128,6 +196,7 @@ class QRCodeGenerator {
       .getElementById("corner-square-color")
       .addEventListener("input", (e) => {
         this.config.cornerSquareColor = e.target.value;
+        this.updateCmykFromHex("corner-square", e.target.value);
         this.validateContrast();
         this.generateQRCode();
       });
@@ -136,6 +205,7 @@ class QRCodeGenerator {
       .getElementById("corner-dot-color")
       .addEventListener("input", (e) => {
         this.config.cornerDotColor = e.target.value;
+        this.updateCmykFromHex("corner-dot", e.target.value);
         this.validateContrast();
         this.generateQRCode();
       });
@@ -144,8 +214,23 @@ class QRCodeGenerator {
       .getElementById("logo-bg-color")
       .addEventListener("input", (e) => {
         this.config.logoBackgroundColor = e.target.value;
+        this.updateCmykFromHex("logo-bg", e.target.value);
         this.generateQRCode();
       });
+
+    // Show/hide CMYK containers on color picker focus
+    this.setupCmykToggle("pattern-color");
+    this.setupCmykToggle("bg-color");
+    this.setupCmykToggle("corner-square-color");
+    this.setupCmykToggle("corner-dot-color");
+    this.setupCmykToggle("logo-bg-color");
+
+    // CMYK slider event listeners
+    this.setupCmykSliders("pattern", "patternColor");
+    this.setupCmykSliders("bg", "backgroundColor");
+    this.setupCmykSliders("corner-square", "cornerSquareColor");
+    this.setupCmykSliders("corner-dot", "cornerDotColor");
+    this.setupCmykSliders("logo-bg", "logoBackgroundColor");
 
     // Logo upload
     document.getElementById("logo-upload").addEventListener("change", (e) => {
@@ -297,6 +382,13 @@ class QRCodeGenerator {
     document.getElementById("corner-dot-color").value = this.config.cornerDotColor;
     document.getElementById("logo-bg-color").value = this.config.logoBackgroundColor;
 
+    // Update CMYK sliders
+    this.updateCmykFromHex("pattern", this.config.patternColor);
+    this.updateCmykFromHex("bg", this.config.backgroundColor);
+    this.updateCmykFromHex("corner-square", this.config.cornerSquareColor);
+    this.updateCmykFromHex("corner-dot", this.config.cornerDotColor);
+    this.updateCmykFromHex("logo-bg", this.config.logoBackgroundColor);
+
     // Validate contrast and regenerate QR code
     this.validateContrast();
     this.generateQRCode();
@@ -317,6 +409,91 @@ class QRCodeGenerator {
       // Default to light gray
       qrContainer.classList.add("bg-light");
     }
+  }
+
+  // CMYK helper methods
+  setupCmykToggle(colorPickerId) {
+    const colorPicker = document.getElementById(colorPickerId);
+    const cmykContainer = document.getElementById(`${colorPickerId}-cmyk`);
+
+    // Show CMYK container on click
+    colorPicker.addEventListener("click", () => {
+      if (cmykContainer.style.display === "none") {
+        cmykContainer.style.display = "block";
+      } else {
+        cmykContainer.style.display = "none";
+      }
+    });
+  }
+
+  setupCmykSliders(prefix, configKey) {
+    const sliders = ['c', 'm', 'y', 'k'];
+
+    sliders.forEach(slider => {
+      const sliderId = `${prefix}-${slider}`;
+      const sliderElement = document.getElementById(sliderId);
+      const valueElement = document.getElementById(`${sliderId}-value`);
+
+      if (sliderElement && valueElement) {
+        sliderElement.addEventListener("input", (e) => {
+          const value = parseInt(e.target.value);
+          valueElement.textContent = value;
+
+          // Get all CMYK values
+          const c = parseInt(document.getElementById(`${prefix}-c`).value);
+          const m = parseInt(document.getElementById(`${prefix}-m`).value);
+          const y = parseInt(document.getElementById(`${prefix}-y`).value);
+          const k = parseInt(document.getElementById(`${prefix}-k`).value);
+
+          // Convert CMYK to hex
+          const hexColor = cmykToHex(c, m, y, k);
+
+          // Update config and color picker
+          this.config[configKey] = hexColor;
+          document.getElementById(`${prefix}-color`).value = hexColor;
+
+          // Validate contrast if applicable
+          if (configKey === "patternColor" || configKey === "cornerSquareColor" || configKey === "cornerDotColor") {
+            this.validateContrast();
+          }
+
+          // Regenerate QR code
+          this.generateQRCode();
+        });
+      }
+    });
+  }
+
+  updateCmykFromHex(prefix, hexColor) {
+    const cmyk = hexToCmyk(hexColor);
+
+    // Update CMYK sliders and values
+    const sliders = {
+      'c': cmyk.c,
+      'm': cmyk.m,
+      'y': cmyk.y,
+      'k': cmyk.k
+    };
+
+    Object.keys(sliders).forEach(key => {
+      const sliderId = `${prefix}-${key}`;
+      const slider = document.getElementById(sliderId);
+      const valueSpan = document.getElementById(`${sliderId}-value`);
+
+      if (slider && valueSpan) {
+        slider.value = sliders[key];
+        valueSpan.textContent = sliders[key];
+      }
+    });
+  }
+
+  initializeCmykValues() {
+    // Initialize CMYK values for all color pickers based on their default hex colors
+    this.updateCmykFromHex("pattern", this.config.patternColor);
+    this.updateCmykFromHex("bg", this.config.backgroundColor);
+    this.updateCmykFromHex("corner-square", this.config.cornerSquareColor);
+    this.updateCmykFromHex("corner-dot", this.config.cornerDotColor);
+    this.updateCmykFromHex("logo-bg", this.config.logoBackgroundColor);
   }
 
   generateQRCode() {

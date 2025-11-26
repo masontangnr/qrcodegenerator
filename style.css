@@ -87,6 +87,72 @@ h2 {
     cursor: pointer;
 }
 
+/* CMYK Color Controls */
+.cmyk-container {
+    margin-top: 10px;
+    padding: 12px;
+    background: #f8f9ff;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.cmyk-slider {
+    margin-bottom: 8px;
+}
+
+.cmyk-slider:last-child {
+    margin-bottom: 0;
+}
+
+.cmyk-slider label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+}
+
+.cmyk-slider input[type="range"] {
+    width: 100%;
+    margin: 0;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.cmyk-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cmyk-slider input[type="range"]::-webkit-slider-thumb:hover {
+    background: #5568d3;
+}
+
+.cmyk-slider input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+}
+
+.cmyk-slider input[type="range"]::-moz-range-thumb:hover {
+    background: #5568d3;
+}
+
 .control-group input[type="range"] {
     width: calc(100% - 50px);
     margin-right: 10px;
