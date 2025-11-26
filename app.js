@@ -283,15 +283,6 @@ class QRCodeGenerator {
       .getElementById("export-pdf")
       .addEventListener("click", () => this.exportAs("pdf"));
 
-    // Theme preset buttons
-    document.getElementById("theme-light").addEventListener("click", () => {
-      this.applyTheme("light");
-    });
-
-    document.getElementById("theme-dark").addEventListener("click", () => {
-      this.applyTheme("dark");
-    });
-
     // Preview background selector
     document.getElementById("preview-bg").addEventListener("change", (e) => {
       this.changePreviewBackground(e.target.value);
@@ -372,42 +363,6 @@ class QRCodeGenerator {
     }
 
     return !hasWarnings;
-  }
-
-  applyTheme(theme) {
-    if (theme === "light") {
-      // Light theme: black patterns on white background
-      this.config.patternColor = "#000000";
-      this.config.backgroundColor = "#ffffff";
-      this.config.cornerSquareColor = "#000000";
-      this.config.cornerDotColor = "#000000";
-      this.config.logoBackgroundColor = "#ffffff";
-    } else if (theme === "dark") {
-      // Dark theme: white patterns on black background
-      this.config.patternColor = "#ffffff";
-      this.config.backgroundColor = "#000000";
-      this.config.cornerSquareColor = "#ffffff";
-      this.config.cornerDotColor = "#ffffff";
-      this.config.logoBackgroundColor = "#ffffff";
-    }
-
-    // Update color pickers in UI
-    document.getElementById("pattern-color").value = this.config.patternColor;
-    document.getElementById("bg-color").value = this.config.backgroundColor;
-    document.getElementById("corner-square-color").value = this.config.cornerSquareColor;
-    document.getElementById("corner-dot-color").value = this.config.cornerDotColor;
-    document.getElementById("logo-bg-color").value = this.config.logoBackgroundColor;
-
-    // Update CMYK sliders
-    this.updateCmykFromHex("pattern", this.config.patternColor);
-    this.updateCmykFromHex("bg", this.config.backgroundColor);
-    this.updateCmykFromHex("corner-square", this.config.cornerSquareColor);
-    this.updateCmykFromHex("corner-dot", this.config.cornerDotColor);
-    this.updateCmykFromHex("logo-bg", this.config.logoBackgroundColor);
-
-    // Validate contrast and regenerate QR code
-    this.validateContrast();
-    this.generateQRCode();
   }
 
   changePreviewBackground(bgType) {
