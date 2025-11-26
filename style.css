@@ -114,43 +114,25 @@ h2 {
     color: #555;
 }
 
-.cmyk-slider input[type="range"] {
-    width: 100%;
+.cmyk-slider input[type="number"] {
+    width: 70px;
+    padding: 6px 8px;
     margin: 0;
-    height: 6px;
-    border-radius: 3px;
-    background: #ddd;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    transition: border-color 0.3s;
+}
+
+.cmyk-slider input[type="number"]:focus {
     outline: none;
-    -webkit-appearance: none;
+    border-color: #667eea;
 }
 
-.cmyk-slider input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #667eea;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.cmyk-slider input[type="range"]::-webkit-slider-thumb:hover {
-    background: #5568d3;
-}
-
-.cmyk-slider input[type="range"]::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #667eea;
-    cursor: pointer;
-    border: none;
-    transition: background 0.2s;
-}
-
-.cmyk-slider input[type="range"]::-moz-range-thumb:hover {
-    background: #5568d3;
+.cmyk-slider input[type="number"]:hover {
+    border-color: #aaa;
 }
 
 .control-group input[type="range"] {
