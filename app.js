@@ -130,9 +130,6 @@ class QRCodeGenerator {
     this.initializeCmykValues();
     this.validateContrast();
     this.generateQRCode();
-
-    // Initialize preview background
-    this.changePreviewBackground("light");
   }
 
   initializeEventListeners() {
@@ -283,11 +280,6 @@ class QRCodeGenerator {
       .getElementById("export-pdf")
       .addEventListener("click", () => this.exportAs("pdf"));
 
-    // Preview background selector
-    document.getElementById("preview-bg").addEventListener("change", (e) => {
-      this.changePreviewBackground(e.target.value);
-    });
-
     // Export settings
     document.getElementById("export-dpi").addEventListener("change", (e) => {
       this.config.exportDPI = parseInt(e.target.value);
@@ -363,23 +355,6 @@ class QRCodeGenerator {
     }
 
     return !hasWarnings;
-  }
-
-  changePreviewBackground(bgType) {
-    const qrContainer = document.querySelector(".qr-container");
-
-    // Remove existing background classes
-    qrContainer.classList.remove("bg-light", "bg-white", "bg-black");
-
-    // Add new background class
-    if (bgType === "white") {
-      qrContainer.classList.add("bg-white");
-    } else if (bgType === "black") {
-      qrContainer.classList.add("bg-black");
-    } else {
-      // Default to light gray
-      qrContainer.classList.add("bg-light");
-    }
   }
 
   updateExportDimensions() {
@@ -484,6 +459,10 @@ class QRCodeGenerator {
 
       this.qrData = qr;
       this.drawQRCode();
+
+      // Sync preview container background with QR code background
+      const qrContainer = document.querySelector(".qr-container");
+      qrContainer.style.backgroundColor = this.config.backgroundColor;
     } catch (error) {
       console.error("Error generating QR code:", error);
     }
