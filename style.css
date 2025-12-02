@@ -342,11 +342,11 @@ button:hover {
     padding: 20px;
     background-color: #f8f9fa;
     border-radius: 10px;
-    min-height: 400px;
+    min-height: 250px;
 }
 
 #qr-canvas {
-    max-width: 100%;
+    max-width: 250px;
     height: auto;
     border-radius: 0;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
