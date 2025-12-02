@@ -269,6 +269,19 @@
                     </div>
                 </div>
 
+                <!-- Export Color Mode -->
+                <div class="control-group">
+                    <label>Export Color Mode:</label>
+                    <div class="color-mode-toggle">
+                        <button id="rgb-mode-btn" class="mode-btn active">RGB Export</button>
+                        <button id="cmyk-mode-btn" class="mode-btn">CMYK Export</button>
+                    </div>
+                    <div id="cmyk-mode-info" class="mode-info" style="display: none;">
+                        <span class="info-icon">ℹ️</span>
+                        CMYK mode is only available for PDF export. Professional print production.
+                    </div>
+                </div>
+
                 <!-- Export Options -->
                 <div class="control-group export-buttons">
                     <label>Export QR Code:</label>
@@ -278,6 +291,7 @@
                         <button id="export-svg" class="export-btn">SVG</button>
                         <button id="export-pdf" class="export-btn">PDF</button>
                     </div>
+                    <div id="export-warning" class="export-warning"></div>
                 </div>
             </div>
 

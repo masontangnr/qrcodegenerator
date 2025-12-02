@@ -435,3 +435,65 @@ button:hover {
     margin-bottom: 3px;
 }
 
+/* Color Mode Toggle */
+.color-mode-toggle {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 12px 20px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mode-btn:hover {
+    background-color: #e0e0e0;
+    border-color: #bbb;
+}
+
+.mode-btn.active {
+    background-color: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.mode-info {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #004085;
+    line-height: 1.4;
+}
+
+.info-icon {
+    margin-right: 5px;
+}
+
+.export-warning {
+    margin-top: 10px;
+    padding: 12px;
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #856404;
+    display: none;
+}
+
+.warning-icon {
+    margin-right: 5px;
+    font-size: 16px;
+}
+

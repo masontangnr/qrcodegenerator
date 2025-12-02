@@ -124,6 +124,14 @@ class QRCodeGenerator {
       margin: 0,
       exportDPI: 300,
       exportSize: 3, // in inches
+      exportColorMode: 'rgb', // 'rgb' or 'cmyk'
+      cmykValues: {
+        pattern: { c: 0, m: 0, y: 0, k: 100 },
+        background: { c: 0, m: 0, y: 0, k: 0 },
+        cornerSquare: { c: 0, m: 0, y: 0, k: 100 },
+        cornerDot: { c: 0, m: 0, y: 0, k: 100 },
+        logoBackground: { c: 0, m: 0, y: 0, k: 0 }
+      }
     };
 
     this.initializeEventListeners();
@@ -291,6 +299,15 @@ class QRCodeGenerator {
       this.updateExportDimensions();
     });
 
+    // Color mode toggle
+    document.getElementById('rgb-mode-btn').addEventListener('click', () => {
+      this.setColorMode('rgb');
+    });
+
+    document.getElementById('cmyk-mode-btn').addEventListener('click', () => {
+      this.setColorMode('cmyk');
+    });
+
     // Initialize export dimensions display
     this.updateExportDimensions();
   }
@@ -383,6 +400,15 @@ class QRCodeGenerator {
   setupCmykSliders(prefix, configKey) {
     const sliders = ['c', 'm', 'y', 'k'];
 
+    // Map prefix to cmykValues key
+    const cmykKeyMap = {
+      'pattern': 'pattern',
+      'bg': 'background',
+      'corner-square': 'cornerSquare',
+      'corner-dot': 'cornerDot',
+      'logo-bg': 'logoBackground'
+    };
+
     sliders.forEach(slider => {
       const sliderId = `${prefix}-${slider}`;
       const sliderElement = document.getElementById(sliderId);
@@ -398,6 +424,12 @@ class QRCodeGenerator {
           const m = parseInt(document.getElementById(`${prefix}-m`).value);
           const y = parseInt(document.getElementById(`${prefix}-y`).value);
           const k = parseInt(document.getElementById(`${prefix}-k`).value);
+
+          // Store CMYK values in config
+          const cmykKey = cmykKeyMap[prefix];
+          if (cmykKey) {
+            this.config.cmykValues[cmykKey] = { c, m, y, k };
+          }
 
           // Convert CMYK to hex
           const hexColor = cmykToHex(c, m, y, k);
@@ -420,6 +452,21 @@ class QRCodeGenerator {
 
   updateCmykFromHex(prefix, hexColor) {
     const cmyk = hexToCmyk(hexColor);
+
+    // Map prefix to cmykValues key
+    const cmykKeyMap = {
+      'pattern': 'pattern',
+      'bg': 'background',
+      'corner-square': 'cornerSquare',
+      'corner-dot': 'cornerDot',
+      'logo-bg': 'logoBackground'
+    };
+
+    // Store CMYK values in config
+    const cmykKey = cmykKeyMap[prefix];
+    if (cmykKey) {
+      this.config.cmykValues[cmykKey] = cmyk;
+    }
 
     // Update CMYK sliders and values
     const sliders = {
@@ -448,6 +495,47 @@ class QRCodeGenerator {
     this.updateCmykFromHex("corner-square", this.config.cornerSquareColor);
     this.updateCmykFromHex("corner-dot", this.config.cornerDotColor);
     this.updateCmykFromHex("logo-bg", this.config.logoBackgroundColor);
+  }
+
+  setColorMode(mode) {
+    this.config.exportColorMode = mode;
+
+    // Update button states
+    const rgbBtn = document.getElementById('rgb-mode-btn');
+    const cmykBtn = document.getElementById('cmyk-mode-btn');
+    const infoDiv = document.getElementById('cmyk-mode-info');
+
+    if (mode === 'rgb') {
+      rgbBtn.classList.add('active');
+      cmykBtn.classList.remove('active');
+      infoDiv.style.display = 'none';
+    } else {
+      rgbBtn.classList.remove('active');
+      cmykBtn.classList.add('active');
+      infoDiv.style.display = 'block';
+    }
+
+    // Hide any existing warnings
+    this.hideExportWarning();
+  }
+
+  showExportWarning(message) {
+    const warningDiv = document.getElementById('export-warning');
+    if (warningDiv) {
+      warningDiv.innerHTML = `
+        <span class="warning-icon">⚠️</span>
+        <strong>Format Not Compatible</strong><br>
+        ${message}
+      `;
+      warningDiv.style.display = 'block';
+    }
+  }
+
+  hideExportWarning() {
+    const warningDiv = document.getElementById('export-warning');
+    if (warningDiv) {
+      warningDiv.style.display = 'none';
+    }
   }
 
   generateQRCode() {
@@ -1149,6 +1237,28 @@ class QRCodeGenerator {
   }
 
   exportAs(format) {
+    // Check if CMYK mode is selected for non-PDF formats
+    if (this.config.exportColorMode === 'cmyk' && format !== 'pdf') {
+      this.showExportWarning(
+        `CMYK color mode is only supported for PDF export. ` +
+        `${format.toUpperCase()} will be exported in RGB color space. ` +
+        `Switch to RGB mode or export as PDF for CMYK colors.`
+      );
+
+      // Allow export to continue with RGB, but show warning
+      const proceed = confirm(
+        `CMYK mode is not supported for ${format.toUpperCase()} export.\n\n` +
+        `Would you like to proceed with RGB export instead?`
+      );
+
+      if (!proceed) {
+        return; // Cancel export
+      }
+    }
+
+    // Hide warning if format is compatible
+    this.hideExportWarning();
+
     switch (format) {
       case "png":
         this.exportPNG();
@@ -1281,6 +1391,27 @@ class QRCodeGenerator {
       return;
     }
 
+    const { jsPDF } = window.jspdf;
+    const sizeInMM = this.config.exportSize * 25.4; // Convert inches to mm
+
+    // Create square PDF with exact dimensions
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: [sizeInMM, sizeInMM]
+    });
+
+    if (this.config.exportColorMode === 'cmyk') {
+      this.renderQRToPDF_CMYK(pdf, sizeInMM);
+    } else {
+      this.renderQRToPDF_RGB(pdf, sizeInMM);
+    }
+
+    // Save the PDF
+    pdf.save("qrcode.pdf");
+  }
+
+  renderQRToPDF_RGB(pdf, sizeInMM) {
     // Calculate high-resolution export size
     const exportSize = Math.round(this.config.exportSize * this.config.exportDPI);
 
@@ -1294,23 +1425,252 @@ class QRCodeGenerator {
     // Convert canvas to image data
     const imgData = exportCanvas.toDataURL("image/png");
 
-    // Create PDF with proper dimensions
-    // jsPDF dimensions are in mm by default
-    const { jsPDF } = window.jspdf;
-    const sizeInMM = this.config.exportSize * 25.4; // Convert inches to mm
-
-    // Create square PDF with exact dimensions
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: [sizeInMM, sizeInMM]
-    });
-
     // Add image to PDF at full size (0,0 position, full width and height)
     pdf.addImage(imgData, "PNG", 0, 0, sizeInMM, sizeInMM);
+  }
 
-    // Save the PDF
-    pdf.save("qrcode.pdf");
+  renderQRToPDF_CMYK(pdf, sizeInMM) {
+    const moduleCount = this.qrData.getModuleCount();
+    const cellSizeMM = sizeInMM / moduleCount;
+
+    // Set background color in CMYK (normalize 0-100 to 0-1)
+    const bgCMYK = this.config.cmykValues.background;
+    pdf.setFillColor(bgCMYK.c / 100, bgCMYK.m / 100, bgCMYK.y / 100, bgCMYK.k / 100, 'CMYK');
+    pdf.rect(0, 0, sizeInMM, sizeInMM, 'F'); // Fill background
+
+    // Draw QR code modules
+    for (let row = 0; row < moduleCount; row++) {
+      for (let col = 0; col < moduleCount; col++) {
+        if (this.qrData.isDark(row, col)) {
+          const x = col * cellSizeMM;
+          const y = row * cellSizeMM;
+
+          // Determine region type and color
+          const isCornerSquare = this.isCornerSquarePosition(row, col, moduleCount);
+          const isCornerDot = this.isCornerDotPosition(row, col, moduleCount);
+
+          if (isCornerSquare) {
+            const cmyk = this.config.cmykValues.cornerSquare;
+            pdf.setFillColor(cmyk.c / 100, cmyk.m / 100, cmyk.y / 100, cmyk.k / 100, 'CMYK');
+            pdf.setDrawColor(cmyk.c / 100, cmyk.m / 100, cmyk.y / 100, cmyk.k / 100, 'CMYK');
+            this.drawPDFCornerSquare(pdf, x, y, cellSizeMM, row, col, moduleCount);
+          } else if (isCornerDot) {
+            const cmyk = this.config.cmykValues.cornerDot;
+            pdf.setFillColor(cmyk.c / 100, cmyk.m / 100, cmyk.y / 100, cmyk.k / 100, 'CMYK');
+            this.drawPDFCornerDot(pdf, x, y, cellSizeMM, row, col, moduleCount);
+          } else {
+            const cmyk = this.config.cmykValues.pattern;
+            pdf.setFillColor(cmyk.c / 100, cmyk.m / 100, cmyk.y / 100, cmyk.k / 100, 'CMYK');
+            this.drawPDFModule(pdf, x, y, cellSizeMM);
+          }
+        }
+      }
+    }
+
+    // Draw logo if present
+    if (this.logoImage) {
+      this.drawPDFLogo(pdf, sizeInMM);
+    }
+  }
+
+  drawPDFModule(pdf, x, y, sizeMM) {
+    switch (this.config.patternStyle) {
+      case "square":
+        pdf.rect(x, y, sizeMM, sizeMM, 'F');
+        break;
+
+      case "rounded":
+      case "extra-rounded":
+      case "classy-rounded":
+        // Use rounded rectangle
+        const radius = sizeMM * 0.2;
+        pdf.roundedRect(x, y, sizeMM, sizeMM, radius, radius, 'F');
+        break;
+
+      case "dots":
+        const dotRadius = sizeMM / 2;
+        pdf.circle(x + dotRadius, y + dotRadius, dotRadius, 'F');
+        break;
+
+      case "diamond":
+        // Draw diamond (rotated square) with 95% size for better scannability
+        const diamondSize = sizeMM * 0.95;
+        const cx = x + sizeMM / 2;
+        const cy = y + sizeMM / 2;
+        const halfDiamond = diamondSize / 2;
+
+        // Draw diamond using lines (top -> right -> bottom -> left -> close)
+        pdf.lines(
+          [
+            [halfDiamond, halfDiamond],      // Top to right
+            [-halfDiamond, halfDiamond],     // Right to bottom
+            [-halfDiamond, -halfDiamond],    // Bottom to left
+            [halfDiamond, -halfDiamond]      // Left to top (close)
+          ],
+          cx,                                 // Start X (top point)
+          cy - halfDiamond,                   // Start Y (top point)
+          [1, 1],                             // Scale
+          'F',                                // Fill
+          true                                // Closed path
+        );
+        break;
+
+      case "classy":
+        // Approximate with square for PDF
+        pdf.rect(x, y, sizeMM, sizeMM, 'F');
+        break;
+
+      default:
+        pdf.rect(x, y, sizeMM, sizeMM, 'F');
+    }
+  }
+
+  drawPDFCornerSquare(pdf, x, y, cellSizeMM, row, col, moduleCount) {
+    // Only draw once at corner origin positions
+    const isOrigin =
+      (row === 0 && col === 0) ||
+      (row === 0 && col === moduleCount - 7) ||
+      (row === moduleCount - 7 && col === 0);
+
+    if (!isOrigin) {
+      return; // Skip non-origin positions
+    }
+
+    const frameSize = cellSizeMM * 7;
+    const borderWidth = cellSizeMM;
+
+    switch (this.config.cornerSquareStyle) {
+      case "square":
+        // Draw frame as 4 filled rectangles
+        pdf.rect(x, y, frameSize, borderWidth, 'F'); // Top
+        pdf.rect(x, y + frameSize - borderWidth, frameSize, borderWidth, 'F'); // Bottom
+        pdf.rect(x, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Left
+        pdf.rect(x + frameSize - borderWidth, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Right
+        break;
+
+      case "rounded":
+      case "extra-rounded":
+        // For rounded, draw outer filled square minus inner cut-out
+        // Simplified: draw as filled rectangles
+        pdf.rect(x, y, frameSize, borderWidth, 'F'); // Top
+        pdf.rect(x, y + frameSize - borderWidth, frameSize, borderWidth, 'F'); // Bottom
+        pdf.rect(x, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Left
+        pdf.rect(x + frameSize - borderWidth, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Right
+        break;
+
+      case "dot":
+        // Draw frame as 4 filled rectangles (circular approximation not crucial for scanning)
+        pdf.rect(x, y, frameSize, borderWidth, 'F'); // Top
+        pdf.rect(x, y + frameSize - borderWidth, frameSize, borderWidth, 'F'); // Bottom
+        pdf.rect(x, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Left
+        pdf.rect(x + frameSize - borderWidth, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Right
+        break;
+
+      case "classy":
+        // Draw frame as 4 filled rectangles
+        pdf.rect(x, y, frameSize, borderWidth, 'F'); // Top
+        pdf.rect(x, y + frameSize - borderWidth, frameSize, borderWidth, 'F'); // Bottom
+        pdf.rect(x, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Left
+        pdf.rect(x + frameSize - borderWidth, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Right
+        break;
+
+      default:
+        // Draw frame as 4 filled rectangles
+        pdf.rect(x, y, frameSize, borderWidth, 'F'); // Top
+        pdf.rect(x, y + frameSize - borderWidth, frameSize, borderWidth, 'F'); // Bottom
+        pdf.rect(x, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Left
+        pdf.rect(x + frameSize - borderWidth, y + borderWidth, borderWidth, frameSize - 2 * borderWidth, 'F'); // Right
+    }
+  }
+
+  drawPDFCornerDot(pdf, x, y, cellSizeMM, row, col, moduleCount) {
+    // Only draw once at dot origin positions
+    const isOrigin =
+      (row === 2 && col === 2) ||
+      (row === 2 && col === moduleCount - 5) ||
+      (row === moduleCount - 5 && col === 2);
+
+    if (!isOrigin) {
+      return; // Skip non-origin positions
+    }
+
+    const dotSize = cellSizeMM * 3;
+
+    switch (this.config.cornerDotStyle) {
+      case "square":
+        pdf.rect(x, y, dotSize, dotSize, 'F');
+        break;
+
+      case "dot":
+        const radius = dotSize / 2;
+        pdf.circle(x + radius, y + radius, radius, 'F');
+        break;
+
+      case "diamond":
+        // Draw diamond (rotated square) with 95% size for better scannability
+        const diamondSize = dotSize * 0.95;
+        const dcx = x + dotSize / 2;
+        const dcy = y + dotSize / 2;
+        const halfDotDiamond = diamondSize / 2;
+
+        // Draw diamond using lines (top -> right -> bottom -> left -> close)
+        pdf.lines(
+          [
+            [halfDotDiamond, halfDotDiamond],      // Top to right
+            [-halfDotDiamond, halfDotDiamond],     // Right to bottom
+            [-halfDotDiamond, -halfDotDiamond],    // Bottom to left
+            [halfDotDiamond, -halfDotDiamond]      // Left to top (close)
+          ],
+          dcx,                                      // Start X (top point)
+          dcy - halfDotDiamond,                     // Start Y (top point)
+          [1, 1],                                   // Scale
+          'F',                                      // Fill
+          true                                      // Closed path
+        );
+        break;
+
+      case "rounded":
+      case "extra-rounded":
+      case "classy":
+        // Use rounded rect for approximation
+        const cornerRadius = cellSizeMM * 0.3;
+        pdf.roundedRect(x, y, dotSize, dotSize, cornerRadius, cornerRadius, 'F');
+        break;
+
+      default:
+        pdf.rect(x, y, dotSize, dotSize, 'F');
+    }
+  }
+
+  drawPDFLogo(pdf, sizeInMM) {
+    // Logo must be drawn as RGB image (jsPDF limitation with images)
+    const logoSizePercent = this.config.logoSize / 100;
+    const logoSizeMM = sizeInMM * logoSizePercent;
+    const logoX = (sizeInMM - logoSizeMM) / 2;
+    const logoY = (sizeInMM - logoSizeMM) / 2;
+
+    // Draw logo background in CMYK (normalize 0-100 to 0-1)
+    const bgCMYK = this.config.cmykValues.logoBackground;
+    pdf.setFillColor(bgCMYK.c / 100, bgCMYK.m / 100, bgCMYK.y / 100, bgCMYK.k / 100, 'CMYK');
+    const paddingMM = (10 / this.config.canvasSize) * sizeInMM; // Scale padding
+    pdf.rect(
+      logoX - paddingMM,
+      logoY - paddingMM,
+      logoSizeMM + 2 * paddingMM,
+      logoSizeMM + 2 * paddingMM,
+      'F'
+    );
+
+    // Convert logo image to data URL and embed (RGB)
+    const logoCanvas = document.createElement('canvas');
+    const logoSize = this.config.canvasSize * logoSizePercent;
+    logoCanvas.width = logoSize;
+    logoCanvas.height = logoSize;
+    const logoCtx = logoCanvas.getContext('2d');
+    logoCtx.drawImage(this.logoImage, 0, 0, logoSize, logoSize);
+    const logoData = logoCanvas.toDataURL('image/png');
+
+    pdf.addImage(logoData, 'PNG', logoX, logoY, logoSizeMM, logoSizeMM);
   }
 }
 
