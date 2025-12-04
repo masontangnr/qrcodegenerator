@@ -702,8 +702,8 @@ class QRCodeGenerator {
         break;
 
       case "diamond":
-        // Draw diamond (rotated square) aligned to grid with spacing
-        const diamondSize = size * 0.95;  // Match PDF export for better scannability
+        // Draw diamond (rotated square) optimized for physical printing
+        const diamondSize = size * 1.0;  // 100% size for better visibility at small print sizes
         this.ctx.save();
         this.ctx.translate(x + size / 2, y + size / 2);
         this.ctx.rotate(Math.PI / 4);
@@ -1041,9 +1041,9 @@ class QRCodeGenerator {
           isTopRightCornerDot ||
           isBottomLeftCornerDot
         ) {
-          // Draw large diamond with spacing in 3x3 area
+          // Draw large diamond optimized for physical printing in 3x3 area
           const fullAreaSize = size * 3;
-          const largeSize = size * 2.85;  // 95% of 3x3 area for consistency
+          const largeSize = size * 3.0;  // 100% of 3x3 area for better visibility
           this.ctx.save();
           this.ctx.translate(x + fullAreaSize / 2, y + fullAreaSize / 2);
           this.ctx.rotate(Math.PI / 4);
@@ -1478,8 +1478,8 @@ class QRCodeGenerator {
         break;
 
       case "diamond":
-        // Draw diamond (rotated square) with 95% size for better scannability
-        const diamondSize = sizeMM * 0.95;
+        // Draw diamond (rotated square) optimized for physical printing
+        const diamondSize = sizeMM * 1.0;  // 100% size for better visibility at small print sizes
         const cx = x + sizeMM / 2;
         const cy = y + sizeMM / 2;
         const halfDiamond = diamondSize / 2;
@@ -1592,8 +1592,8 @@ class QRCodeGenerator {
         break;
 
       case "diamond":
-        // Draw diamond (rotated square) with 95% size for better scannability
-        const diamondSize = dotSize * 0.95;
+        // Draw diamond (rotated square) optimized for physical printing
+        const diamondSize = dotSize * 1.0;  // 100% size for better visibility at small print sizes
         const dcx = x + dotSize / 2;
         const dcy = y + dotSize / 2;
         const halfDotDiamond = diamondSize / 2;
