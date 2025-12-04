@@ -119,7 +119,6 @@ class QRCodeGenerator {
       cornerDotStyle: "square",
       cornerDotColor: "#000000",
       logoSize: 20,
-      logoBackgroundColor: "#ffffff",
       canvasSize: 300,
       margin: 0,
       exportDPI: 300,
@@ -129,8 +128,7 @@ class QRCodeGenerator {
         pattern: { c: 0, m: 0, y: 0, k: 100 },
         background: { c: 0, m: 0, y: 0, k: 0 },
         cornerSquare: { c: 0, m: 0, y: 0, k: 100 },
-        cornerDot: { c: 0, m: 0, y: 0, k: 100 },
-        logoBackground: { c: 0, m: 0, y: 0, k: 0 }
+        cornerDot: { c: 0, m: 0, y: 0, k: 100 }
       }
     };
 
@@ -217,27 +215,17 @@ class QRCodeGenerator {
         this.generateQRCode();
       });
 
-    document
-      .getElementById("logo-bg-color")
-      .addEventListener("input", (e) => {
-        this.config.logoBackgroundColor = e.target.value;
-        this.updateCmykFromHex("logo-bg", e.target.value);
-        this.generateQRCode();
-      });
-
     // Show/hide CMYK containers on color picker focus
     this.setupCmykToggle("pattern-color");
     this.setupCmykToggle("bg-color");
     this.setupCmykToggle("corner-square-color");
     this.setupCmykToggle("corner-dot-color");
-    this.setupCmykToggle("logo-bg-color");
 
     // CMYK slider event listeners
     this.setupCmykSliders("pattern", "patternColor");
     this.setupCmykSliders("bg", "backgroundColor");
     this.setupCmykSliders("corner-square", "cornerSquareColor");
     this.setupCmykSliders("corner-dot", "cornerDotColor");
-    this.setupCmykSliders("logo-bg", "logoBackgroundColor");
 
     // Logo upload
     document.getElementById("logo-upload").addEventListener("change", (e) => {
@@ -405,8 +393,7 @@ class QRCodeGenerator {
       'pattern': 'pattern',
       'bg': 'background',
       'corner-square': 'cornerSquare',
-      'corner-dot': 'cornerDot',
-      'logo-bg': 'logoBackground'
+      'corner-dot': 'cornerDot'
     };
 
     sliders.forEach(slider => {
@@ -458,8 +445,7 @@ class QRCodeGenerator {
       'pattern': 'pattern',
       'bg': 'background',
       'corner-square': 'cornerSquare',
-      'corner-dot': 'cornerDot',
-      'logo-bg': 'logoBackground'
+      'corner-dot': 'cornerDot'
     };
 
     // Store CMYK values in config
@@ -494,7 +480,6 @@ class QRCodeGenerator {
     this.updateCmykFromHex("bg", this.config.backgroundColor);
     this.updateCmykFromHex("corner-square", this.config.cornerSquareColor);
     this.updateCmykFromHex("corner-dot", this.config.cornerDotColor);
-    this.updateCmykFromHex("logo-bg", this.config.logoBackgroundColor);
   }
 
   setColorMode(mode) {
@@ -718,7 +703,7 @@ class QRCodeGenerator {
 
       case "diamond":
         // Draw diamond (rotated square) aligned to grid with spacing
-        const diamondSize = size * 0.7;
+        const diamondSize = size * 0.95;  // Match PDF export for better scannability
         this.ctx.save();
         this.ctx.translate(x + size / 2, y + size / 2);
         this.ctx.rotate(Math.PI / 4);
@@ -1058,7 +1043,7 @@ class QRCodeGenerator {
         ) {
           // Draw large diamond with spacing in 3x3 area
           const fullAreaSize = size * 3;
-          const largeSize = size * 2.2;
+          const largeSize = size * 2.85;  // 95% of 3x3 area for consistency
           this.ctx.save();
           this.ctx.translate(x + fullAreaSize / 2, y + fullAreaSize / 2);
           this.ctx.rotate(Math.PI / 4);
@@ -1190,8 +1175,8 @@ class QRCodeGenerator {
     const logoX = (this.config.canvasSize - logoSize) / 2;
     const logoY = (this.config.canvasSize - logoSize) / 2;
 
-    // Draw background for logo using independent color
-    this.ctx.fillStyle = this.config.logoBackgroundColor;
+    // Draw background for logo using QR code background color
+    this.ctx.fillStyle = this.config.backgroundColor;
     this.ctx.fillRect(logoX - 10, logoY - 10, logoSize + 20, logoSize + 20);
 
     // Draw logo
@@ -1366,10 +1351,10 @@ class QRCodeGenerator {
       const logoX = (this.config.canvasSize - logoSize) / 2;
       const logoY = (this.config.canvasSize - logoSize) / 2;
 
-      // Background for logo using independent color
+      // Background for logo using QR code background color
       svg += `\n        <rect x="${logoX - 10}" y="${logoY - 10}" width="${
         logoSize + 20
-      }" height="${logoSize + 20}" fill="${this.config.logoBackgroundColor}"/>`;
+      }" height="${logoSize + 20}" fill="${this.config.backgroundColor}"/>`;
     }
 
     svg += "\n    </g>\n</svg>";
@@ -1649,8 +1634,8 @@ class QRCodeGenerator {
     const logoX = (sizeInMM - logoSizeMM) / 2;
     const logoY = (sizeInMM - logoSizeMM) / 2;
 
-    // Draw logo background in CMYK (normalize 0-100 to 0-1)
-    const bgCMYK = this.config.cmykValues.logoBackground;
+    // Draw logo background using QR code background color in CMYK
+    const bgCMYK = this.config.cmykValues.background;
     pdf.setFillColor(bgCMYK.c / 100, bgCMYK.m / 100, bgCMYK.y / 100, bgCMYK.k / 100, 'CMYK');
     const paddingMM = (10 / this.config.canvasSize) * sizeInMM; // Scale padding
     pdf.rect(
